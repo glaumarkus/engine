@@ -94,25 +94,19 @@ static const EVP_MD* init_engine_sha256_method(void)
 static inline int engine_sha256_init(EVP_MD_CTX *ctx)
 {
     printf("engine_sha256_init called!\n");
-    return 1;
+    return SHA256_Init(&CTX_CAST(ctx)->ctx);
 }
 
 static inline int engine_sha256_update(EVP_MD_CTX *ctx, const void *in, size_t len)
 {
     printf("engine_sha256_update called!\n");
-    return 1;
+    return SHA256_Update(&CTX_CAST(ctx)->ctx, in, len);
 }
 
 static inline int engine_sha256_final(EVP_MD_CTX *ctx, unsigned char *md)
 {
     printf("engine_sha256_final called!\n");
-    return 1;
-}
-
-static inline int engine_sha256_copy(EVP_MD_CTX *dst, const EVP_MD_CTX *src)
-{
-    printf("engine_sha256_copy called!\n");
-    return 1;
+    return SHA256_Final(md, &CTX_CAST(ctx)->ctx);
 }
 
 static inline int engine_sha256_cleanup(EVP_MD_CTX *ctx)

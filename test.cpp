@@ -80,13 +80,13 @@ TEST(Test, Sha256) {
 TEST(Test, Sha384) {
 
     // Hash without engine
-    std::string str ("Sample input");
+    std::string str("Sample input");
     std::vector<uint8_t> digest_sw;
     int digest_size_sw = 0;
     std::vector<uint8_t> digest_engine;
     int digest_size_engine = 0;
 
-    digest_size_sw = EVP_MD_meth_get_result_size(EVP_sha256());
+    digest_size_sw = EVP_MD_meth_get_result_size(EVP_sha3_384());
     digest_sw.resize(digest_size_sw);
     unsigned int digestSize = -1;
     EVP_MD_CTX *evp_ctx;
@@ -95,6 +95,7 @@ TEST(Test, Sha384) {
     EVP_DigestUpdate(evp_ctx, (unsigned char*)str.data(), str.size());
     EVP_DigestFinal(evp_ctx, (unsigned char*)digest_sw.data(), &digestSize);
     EVP_MD_CTX_free(evp_ctx);
+    
 
 
     const EVP_MD* engine_digest = ENGINE_get_digest(engine, NID_sha3_384);
@@ -104,9 +105,10 @@ TEST(Test, Sha384) {
 
     digest_engine.resize(digest_size_engine);
     evp_ctx = EVP_MD_CTX_create();
-    EVP_DigestInit_ex(evp_ctx, EVP_sha256(), engine);
+    EVP_DigestInit_ex(evp_ctx, EVP_sha3_384(), engine);
     EVP_DigestUpdate(evp_ctx, (unsigned char*)str.data(), str.size());
     EVP_DigestFinal(evp_ctx, (unsigned char*)digest_engine.data(), &digestSize);
-    
+    EVP_MD_CTX_free(evp_ctx);
+
     EXPECT_EQ(digest_sw, digest_engine);
 }

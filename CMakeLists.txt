@@ -11,7 +11,10 @@ set(ENGINE_NAME mbengine)
 set(ENGINE_VERSION 1.0.0)
 
 # Set the source files for your engine
-set(ENGINE_SRCS mb_pkcs11_engine.c mb_pkcs11_engine_sha256.c)
+set(ENGINE_SRCS 
+#  mb_pkcs11_engine_sha256.c  
+  mb_pkcs11_engine.c 
+)
 
 # Set the name of the test
 set(TEST_NAME pkcs11test)

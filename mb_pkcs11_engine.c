@@ -21,7 +21,7 @@ static int pkey_methods_ids[] = {NID_X9_62_id_ecPublicKey};
 static int engine_pkey_selector(ENGINE *e, EVP_PKEY_METHOD **method,
         const int **nids, int nid) {
     
-    printf("[Engine]: engine_digest_selector called!\n");
+    printf("[Engine]: engine_pkey_selector called!\n");
     int ok = 1;
 
     if (!method) {

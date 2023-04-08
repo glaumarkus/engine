@@ -22,10 +22,9 @@ set(TEST_NAME pkcs11test)
 # Set the include directories for OpenSSL
 # find_package(OpenSSL REQUIRED)
 
-set(OPENSSL_INCLUDE_DIR "/usr/local/include")
-# set(OPENSSL_INCLUDE_DIR "/home/glaum/curl/openssl-1.1.1b/include")
-set(OPENSSL_CRYPTO_LIBRARY "/home/glaum/openssl/libcrypto.so")
-set(OPENSSL_SSL_LIBRARY "/home/glaum/openssl/libssl.so")
+set(OPENSSL_INCLUDE_DIR "/home/glaum/curl/openssl-1.1.1b/include")
+set(OPENSSL_CRYPTO_LIBRARY "/home/glaum/curl/openssl-1.1.1b/libcrypto.so.1.1")
+set(OPENSSL_SSL_LIBRARY "/home/glaum/curl/openssl-1.1.1b/libssl.so")
 
 message("OpenSSL_INCLUDE_DIRS: ${OPENSSL_INCLUDE_DIR}")
 message("OpenSSL_CRYPTO_LIB: ${OPENSSL_CRYPTO_LIBRARY}")

@@ -9,11 +9,6 @@
 #include <openssl/ec.h>
 #include <string.h>
 
-#define USE_SHA256
-#define USE_SHA384
-#define USE_AES_256_CBC
-#define USE_CHACHA20
-#define USE_RANDOM
 
 /* Init / Finish / Cmd */
 static int engine_init(ENGINE* engine);
@@ -27,10 +22,9 @@ static int engine_get_random_bytes(unsigned char *buffer, int num);
 /* Selectors */
 static int engine_digest_selector(ENGINE *e, const EVP_MD **digest,
         const int **nids, int nid);
-// // static int engine_pkey_selector(ENGINE *e, EVP_PKEY_METHOD **method,
-// //         const int **nids, int nid);
-
-// static int engine_cipher_selector(ENGINE *e, const EVP_CIPHER **cipher, 
+static int engine_cipher_selector(ENGINE *e, const EVP_CIPHER **cipher, 
+        const int **nids, int nid);
+// static int engine_pkey_selector(ENGINE *e, EVP_PKEY_METHOD **method,
 //         const int **nids, int nid);
 // static int engine_ec_selector(ENGINE *e, EVP_PKEY_METHOD **method,
 //         const int **nids, int nid);
@@ -50,28 +44,29 @@ static inline int engine_sha384_final(EVP_MD_CTX *ctx, unsigned char *md);
 static inline int engine_sha384_cleanup(EVP_MD_CTX *ctx);
 static const EVP_MD* init_engine_sha384_method(void);
 
+/* aes 256 cbc mapping */
+static inline int engine_aes256_cbc_init(EVP_CIPHER_CTX *ctx, const unsigned char *key, const unsigned char *iv, int enc);
+static inline int engine_aes256_cbc_do_cipher(EVP_CIPHER_CTX *ctx, unsigned char *out, const unsigned char *in, size_t inlen);
+static inline int engine_aes256_cbc_cleanup(EVP_CIPHER_CTX *ctx);
+static const EVP_CIPHER* init_engine_aes256_cbc_method(void);
 
+/* chacha20 mapping */
+static inline int engine_chacha20_init(EVP_CIPHER_CTX * ctx, const unsigned char *key, const unsigned char *iv, int enc);
+static inline int engine_chacha20_do_cipher(EVP_CIPHER_CTX * ctx, unsigned char *out, const unsigned char *in, size_t inlen);
+static inline int engine_chacha20_cleanup(EVP_CIPHER_CTX *ctx);
+static const EVP_CIPHER* init_engine_chacha20_method(void);
 
-// /* Loaders */
-// static EVP_PKEY *engine_load_private_key(ENGINE *engine, const char *key_id,
-//                               UI_METHOD *ui_method, void *callback_data);
+/* Loaders */
+static EVP_PKEY *engine_load_private_key(ENGINE *engine, const char *key_id,
+                              UI_METHOD *ui_method, void *callback_data);
 // static int engine_load_certificate(ENGINE *engine, SSL *ssl, STACK_OF(X509_NAME) *ca_dn,
 // X509 **pcert, EVP_PKEY **pkey, STACK_OF(X509) **pother,
 // UI_METHOD *ui_method, void *callback_data);
 
 
 
-// /* aes 256 cbc mapping */
-// static inline int engine_aes256_cbc_init(EVP_CIPHER_CTX * ctx, const unsigned char *key, const unsigned char *iv, int enc);
-// static inline int engine_aes256_cbc_do_cipher(EVP_CIPHER_CTX * ctx, unsigned char *out, const unsigned char *in, size_t inlen);
-// static inline int engine_aes256_cbc_cleanup(EVP_CIPHER_CTX *ctx);
-// static const EVP_CIPHER* init_engine_aes256_cbc_method(void);
 
-// /* chacha20 mapping */
-// static inline int engine_chacha20_init(EVP_CIPHER_CTX * ctx, const unsigned char *key, const unsigned char *iv, int enc);
-// static inline int engine_chacha20_do_cipher(EVP_CIPHER_CTX * ctx, unsigned char *out, const unsigned char *in, size_t inlen);
-// static inline int engine_chacha20_cleanup(EVP_CIPHER_CTX *ctx);
-// static const EVP_CIPHER* init_engine_chacha20_method(void);
+
 
 
 

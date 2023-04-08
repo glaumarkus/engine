@@ -16,6 +16,7 @@ RAND_METHOD engine_random_method = {
         engine_random_status        /* status */
 };
 
+
 /* sha256 method */
 static EVP_MD* engine_sha256_method = NULL;
 static const EVP_MD* init_engine_sha256_method(void)
@@ -35,32 +36,27 @@ static const EVP_MD* init_engine_sha256_method(void)
     }
     return engine_sha256_method;
 }
-
-
-/* sha256 methods */
 static inline int engine_sha256_init(EVP_MD_CTX *ctx)
 {
     printf("[Engine]: engine_sha256_init called!\n");
     return sha256_init(ctx);
 }
-
 static inline int engine_sha256_update(EVP_MD_CTX *ctx, const void *in, size_t len)
 {
     printf("[Engine]: engine_sha256_update called!\n");
     return sha256_update(ctx, in, len);
 }
-
 static inline int engine_sha256_final(EVP_MD_CTX *ctx, unsigned char *md)
 {
     printf("[Engine]: engine_sha256_final called!\n");
     return sha256_final(ctx, md);
 }
-
 static inline int engine_sha256_cleanup(EVP_MD_CTX *ctx)
 {
     printf("[Engine]: engine_sha256_cleanup called!\n");
     return sha256_cleanup(ctx);
 }
+
 
 /* sha384 method */
 static EVP_MD* engine_sha384_method = NULL;
@@ -80,32 +76,95 @@ static const EVP_MD* init_engine_sha384_method(void)
     }
     return engine_sha384_method;
 }
-
-
-
-/* sha384 methods */
 static inline int engine_sha384_init(EVP_MD_CTX *ctx)
 {
     printf("[Engine]: engine_sha384_init called!\n");
     return sha384_init(ctx);
 }
-
 static inline int engine_sha384_update(EVP_MD_CTX *ctx, const void *in, size_t len)
 {
     printf("[Engine]: engine_sha384_update called!\n");
     return sha384_update(ctx, in, len);
 }
-
 static inline int engine_sha384_final(EVP_MD_CTX *ctx, unsigned char *md)
 {
     printf("[Engine]: engine_sha384_final called!\n");
     return sha384_final(ctx, md);
 }
-
 static inline int engine_sha384_cleanup(EVP_MD_CTX *ctx)
 {
     printf("[Engine]: engine_sha384_cleanup called!\n");
     return sha384_cleanup(ctx);
+}
+
+
+/* aes 256 cbc method */
+static EVP_CIPHER* engine_aes256_cbc_method = NULL;
+static const EVP_CIPHER* init_engine_aes256_cbc_method(void)
+{
+    printf("[Engine]: init_engine_aes256_cbc_method called!\n");
+    if (engine_aes256_cbc_method == NULL)
+    {
+        engine_aes256_cbc_method = EVP_CIPHER_meth_new(NID_aes_256_cbc, 16, 32);
+        EVP_CIPHER_meth_set_iv_length(engine_aes256_cbc_method, 16);
+        EVP_CIPHER_meth_set_flags(engine_aes256_cbc_method, EVP_CIPH_CBC_MODE);
+        EVP_CIPHER_meth_set_init(engine_aes256_cbc_method, engine_aes256_cbc_init);
+        EVP_CIPHER_meth_set_do_cipher(engine_aes256_cbc_method, engine_aes256_cbc_do_cipher);
+        EVP_CIPHER_meth_set_cleanup(engine_aes256_cbc_method, engine_aes256_cbc_cleanup);
+        EVP_CIPHER_meth_set_impl_ctx_size(engine_aes256_cbc_method, aes256_cbc_size());
+    }
+    return engine_aes256_cbc_method;
+}
+static inline int engine_aes256_cbc_init(EVP_CIPHER_CTX * ctx, const unsigned char *key,
+		const unsigned char *iv, int enc)
+{
+    printf("[Engine]: engine_aes256_cbc_init called!\n");
+    return aes256_cbc_init(ctx, key, iv, enc); 
+}
+static inline int engine_aes256_cbc_do_cipher(EVP_CIPHER_CTX * ctx, unsigned char *out,
+		const unsigned char *in, size_t inlen)
+{
+    printf("[Engine]: engine_aes256_cbc_do_cipher called !\n");
+    return aes256_cbc_do_cipher(ctx, out, in, inlen);
+}
+static inline int engine_aes256_cbc_cleanup(EVP_CIPHER_CTX *ctx)
+{
+    printf("[Engine]: engine_aes256_cbc_cleanup called!\n");
+    return aes256_cbc_cleanup(ctx); 
+}
+
+
+/* chacha20 method */
+static EVP_CIPHER* engine_chacha20_method = NULL;
+static const EVP_CIPHER* init_engine_chacha20_method(void)
+{
+    printf("[Engine]: engine_chacha20_method called!\n");
+    if (engine_chacha20_method == NULL)
+    {
+        engine_chacha20_method = EVP_CIPHER_meth_new(NID_chacha20, 1, 32);
+        EVP_CIPHER_meth_set_iv_length(engine_chacha20_method, 16);
+        EVP_CIPHER_meth_set_init(engine_chacha20_method, engine_chacha20_init);
+        EVP_CIPHER_meth_set_do_cipher(engine_chacha20_method, engine_chacha20_do_cipher);
+        EVP_CIPHER_meth_set_cleanup(engine_chacha20_method, engine_chacha20_cleanup);
+    }
+    return engine_chacha20_method;
+}
+static inline int engine_chacha20_init(EVP_CIPHER_CTX * ctx, const unsigned char *key,
+		const unsigned char *iv, int enc)
+{
+    printf("[Engine]: engine_chacha20_init called!\n");
+    return chacha20_init(ctx, key, iv, enc); 
+}
+static inline int engine_chacha20_do_cipher(EVP_CIPHER_CTX * ctx, unsigned char *out,
+		const unsigned char *in, size_t inlen)
+{
+    printf("[Engine]: engine_chacha20_do_cipher called!\n");
+    return chacha20_do_cipher(ctx, out, in, inlen);
+}
+static inline int engine_chacha20_cleanup(EVP_CIPHER_CTX *ctx)
+{
+    printf("[Engine]: engine_chacha20_cleanup called!\n");
+    return chacha20_cleanup(ctx); 
 }
 
 
@@ -118,14 +177,14 @@ int engine_bind(ENGINE * e, const char *id)
     printf("[Engine]: engine_bind called\n");
     if (!ENGINE_set_id(e, mb_engine_id) ||
         !ENGINE_set_name(e, mb_engine_name) ||
-        // !ENGINE_set_ctrl_function(e, engine_ctrl_cmd_string) ||
         !ENGINE_set_init_function(e, engine_init) ||
         !ENGINE_set_finish_function(e, engine_finish) ||
         !ENGINE_set_RAND(e, &engine_random_method) ||
-        !ENGINE_set_digests(e, &engine_digest_selector) 
-        // !ENGINE_set_ciphers(e, &engine_cipher_selector) 
+        !ENGINE_set_digests(e, &engine_digest_selector) ||
+        !ENGINE_set_ciphers(e, &engine_cipher_selector) 
+        //!ENGINE_set_load_privkey_function(e, &engine_load_private_key)
+        // !ENGINE_set_ctrl_function(e, engine_ctrl_cmd_string) ||
         // !ENGINE_set_pkey_meths(e, &engine_pkey_selector) ||
-        // !ENGINE_set_load_privkey_function(e, &engine_load_private_key) ||
         // !ENGINE_set_load_ssl_client_cert_function(e, &engine_load_certificate) ||
         // !ENGINE_set_EC(e, ecdsa_method) ||
         // !ENGINE_set_DSA(e, dsa_method)
@@ -140,7 +199,6 @@ int engine_bind(ENGINE * e, const char *id)
 
 IMPLEMENT_DYNAMIC_BIND_FN(engine_bind)
 IMPLEMENT_DYNAMIC_CHECK_FN()
-
 
 
 /* digest selector */ 
@@ -173,68 +231,48 @@ static int engine_digest_selector(ENGINE *e, const EVP_MD **digest,
     return ok;
 }
 
+/* cipher selector */ 
+static int cipher_ids[] = {NID_aes_256_cbc, NID_chacha20};
+static int engine_cipher_selector(ENGINE *e, const EVP_CIPHER **cipher, const int **nids, int nid)
+{
+    printf("[Engine]: engine_cipher_selector called!\n");
+    int ok = 1;
 
-
-
-
-
-
-// /* aes 256 cbc method */
-// static EVP_CIPHER* engine_aes256_cbc_method = NULL;
-// static const EVP_CIPHER* init_engine_aes256_cbc_method(void)
-// {
-//     printf("[Engine]: init_engine_aes256_cbc_method called!\n");
-//     engine_aes256_cbc_method = EVP_CIPHER_meth_new(NID_aes_256_cbc, 8, 32);
-//     EVP_CIPHER_meth_set_iv_length(engine_aes256_cbc_method, 16);
-//     EVP_CIPHER_meth_set_flags(engine_aes256_cbc_method, EVP_CIPH_CBC_MODE);
-//     EVP_CIPHER_meth_set_init(engine_aes256_cbc_method, engine_aes256_cbc_init);
-//     EVP_CIPHER_meth_set_do_cipher(engine_aes256_cbc_method, engine_aes256_cbc_do_cipher);
-//     EVP_CIPHER_meth_set_cleanup(engine_aes256_cbc_method, engine_aes256_cbc_cleanup);
-//     return engine_aes256_cbc_method;
-// }
-
-// /* chacha20 method */
-// static EVP_CIPHER* engine_chacha20_method = NULL;
-// static const EVP_CIPHER* init_engine_chacha20_method(void)
-// {
-//     printf("[Engine]: engine_chacha20_method called!\n");
-//     engine_chacha20_method = EVP_CIPHER_meth_new(NID_chacha20, 8, 32);
-//     EVP_CIPHER_meth_set_iv_length(engine_chacha20_method, 16);
-//     EVP_CIPHER_meth_set_init(engine_chacha20_method, engine_chacha20_init);
-//     EVP_CIPHER_meth_set_do_cipher(engine_chacha20_method, engine_chacha20_do_cipher);
-//     EVP_CIPHER_meth_set_cleanup(engine_chacha20_method, engine_chacha20_cleanup);
-
-//     return engine_chacha20_method;
-// }
-
-// /* cipher selector */ 
-// static int cipher_ids[] = {NID_aes_256_cbc, NID_chacha20};
-// static int engine_cipher_selector(ENGINE *e, const EVP_CIPHER **cipher, const int **nids, int nid)
-// {
-//     printf("[Engine]: engine_cipher_selector called!\n");
-//     int ok = 1;
-
-//     if (!cipher)
-//     {
-//         *nids = cipher_ids;
-//         printf("[Engine]: \n Cipher is empty! Nid:%d\n", nid);
-//         return 2;
-//     }
+    if (!cipher)
+    {
+        *nids = cipher_ids;
+        printf("[Engine]: \n Cipher is empty! Nid:%d\n", nid);
+        return 2;
+    }
     
-//     switch (nid)
-//     {
-//         case NID_aes_256_cbc:
-//             *cipher = init_engine_aes256_cbc_method();
-//             break;
-//         case NID_chacha20:
-//             *cipher = init_engine_chacha20_method();
-//             break;
-//         default:
-//             *cipher = NULL;
-//             ok = 0;
-//     }
-//     return ok;
+    switch (nid)
+    {
+        case NID_aes_256_cbc:
+            *cipher = init_engine_aes256_cbc_method();
+            break;
+        case NID_chacha20:
+            *cipher = init_engine_chacha20_method();
+            break;
+        default:
+            *cipher = NULL;
+            ok = 0;
+    }
+    return ok;
+}
+
+
+// static EVP_PKEY *engine_load_private_key(ENGINE *engine, const char *key_id,
+//                               UI_METHOD *ui_method, void *callback_data) {
+//     printf("[Engine]: engine_load_private_key called!\n");
+//     return load_ec_key(key_id);
 // }
+
+
+
+
+
+
+
 
      
 // static int pkey_methods_ids[] = {NID_brainpoolP384r1};
@@ -279,11 +317,7 @@ static int engine_digest_selector(ENGINE *e, const EVP_MD **digest,
 // }
 
 
-// static EVP_PKEY *engine_load_private_key(ENGINE *engine, const char *key_id,
-//                               UI_METHOD *ui_method, void *callback_data) {
-//     printf("[Engine]: engine_load_private_key called!\n");
-//     return load_ec_key(key_id);
-// }
+
 
 // static int engine_load_certificate(ENGINE *engine, SSL *ssl, STACK_OF(X509_NAME) *ca_dn,
 //                               X509 **pcert, EVP_PKEY **pkey, STACK_OF(X509) **pother,
@@ -320,48 +354,6 @@ static int engine_finish(ENGINE* engine)
 
 
 
-
-// /* aes 256 cbc methods */
-// static inline int engine_aes256_cbc_init(EVP_CIPHER_CTX * ctx, const unsigned char *key,
-// 		const unsigned char *iv, int enc)
-// {
-//     printf("[Engine]: engine_aes256_cbc_init called!\n");
-//     return aes256_cbc_init(ctx, key, iv, enc); 
-// }
- 
-// static inline int engine_aes256_cbc_do_cipher(EVP_CIPHER_CTX * ctx, unsigned char *out,
-// 		const unsigned char *in, size_t inlen)
-// {
-//     printf("[Engine]: engine_aes256_cbc_do_cipher called!\n");
-//     return aes256_cbc_do_cipher(ctx, out, in, inlen);
-// }
-
-// static inline int engine_aes256_cbc_cleanup(EVP_CIPHER_CTX *ctx)
-// {
-//     printf("[Engine]: engine_aes256_cbc_cleanup called!\n");
-//     return aes256_cbc_cleanup(ctx); 
-// }
-
-// /* chacha20 methods */
-// static inline int engine_chacha20_init(EVP_CIPHER_CTX * ctx, const unsigned char *key,
-// 		const unsigned char *iv, int enc)
-// {
-//     printf("[Engine]: engine_chacha20_init called!\n");
-//     return chacha20_init(ctx, key, iv, enc); 
-// }
- 
-// static inline int engine_chacha20_do_cipher(EVP_CIPHER_CTX * ctx, unsigned char *out,
-// 		const unsigned char *in, size_t inlen)
-// {
-//     printf("[Engine]: engine_chacha20_do_cipher called!\n");
-//     return chacha20_do_cipher(ctx, out, in, inlen);
-// }
-
-// static inline int engine_chacha20_cleanup(EVP_CIPHER_CTX *ctx)
-// {
-//     printf("[Engine]: engine_chacha20_cleanup called!\n");
-//     return chacha20_cleanup(ctx); 
-// }
 
 
 

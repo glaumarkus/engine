@@ -3,6 +3,7 @@
 
 using ::testing::Test;
 
+
 std::string base64_encode(const std::vector<std::uint8_t>& input) {
     std::string output;
 
@@ -42,11 +43,14 @@ TEST(Test, EngineLoaded) {
 
 TEST(Test, EngineInit)
 {
+    ASSERT_NE(engine, nullptr);
     // initialize the engine
     EXPECT_EQ(1, ENGINE_init(engine));
 }
 
 TEST(Test, Sha256) {
+    ASSERT_NE(engine, nullptr);
+
     // example input
     std::string str ("Sample input");
 
@@ -80,6 +84,7 @@ TEST(Test, Sha256) {
 }
 
 TEST(Test, Sha384) {
+    ASSERT_NE(engine, nullptr);
 
     // Example input
     std::string str("Sample input");
@@ -115,6 +120,8 @@ TEST(Test, Sha384) {
 }
 
 TEST(Test, AesCbc256) {
+    ASSERT_NE(engine, nullptr);
+
     // plaintext
     std::string plaintext("This is a longer secret message that needs to be encrypted.");
 
@@ -122,7 +129,7 @@ TEST(Test, AesCbc256) {
     std::string key("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
 
     // static nonce
-    std::string nonce("AAAAAAAAAAAAAAAA");
+    std::string iv("AAAAAAAAAAAAAAAA");
 
     // params to check
     int sw_blocksize = EVP_CIPHER_block_size(EVP_aes_256_cbc());   /* 16 */
@@ -131,7 +138,7 @@ TEST(Test, AesCbc256) {
 
     // Encryption with Openssl
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
-    EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), nullptr, (unsigned char*)key.data(), (unsigned char*)nonce.data());
+    EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), nullptr, (unsigned char*)key.data(), (unsigned char*)iv.data());
 
     // Calculate output buffer size
     const int outlen = plaintext.size() + EVP_CIPHER_CTX_block_size(ctx);
@@ -152,21 +159,76 @@ TEST(Test, AesCbc256) {
     std::string decrypted_sw;
     decrypted_sw.resize(ciphertext_len);
     ctx = EVP_CIPHER_CTX_new();
-    EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), nullptr, (unsigned char*)key.data(), (unsigned char*)nonce.data());
+
+    // Decrypt init
+    EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), nullptr, (unsigned char*)key.data(), (unsigned char*)iv.data());
     int plaintext_len = 0;
     EVP_DecryptUpdate(ctx, (unsigned char*)decrypted_sw.data(), &plaintext_len, (unsigned char*)ciphertext.data(), ciphertext.size());
     final_len = 0;
-    EVP_EncryptFinal_ex(ctx, (unsigned char*)decrypted_sw.data() + plaintext_len, &final_len);
+    EVP_DecryptFinal_ex(ctx, (unsigned char*)decrypted_sw.data() + plaintext_len, &final_len);
     EVP_CIPHER_CTX_free(ctx);
     plaintext_len += final_len;
     decrypted_sw.resize(plaintext_len);
 
     // test if worked as expected
     EXPECT_EQ(decrypted_sw, plaintext);
+
+    // check if engine has cipher
+    const EVP_CIPHER* cipher = ENGINE_get_cipher(engine, NID_aes_256_cbc);
+    ASSERT_NE(cipher, nullptr);
+
+    // load engine cipher params
+    int engine_blocksize = EVP_CIPHER_block_size(cipher);   /* 16 */
+    int engine_keylen = EVP_CIPHER_key_length(cipher);      /* 32 */
+    int engine_ivlen = EVP_CIPHER_iv_length(cipher);        /* 16 */
+
+    // check engine cipher params
+    EXPECT_EQ(engine_blocksize, sw_blocksize);
+    EXPECT_EQ(engine_keylen, sw_keylen);
+    EXPECT_EQ(engine_ivlen, sw_ivlen);
+
+    // encrypt with engine
+    ctx = EVP_CIPHER_CTX_new();
+    EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), engine, (unsigned char*)key.data(), (unsigned char*)iv.data());
+
+    // Calculate output buffer size
+    std::vector<uint8_t> engine_ciphertext(outlen);
+
+    // Encrypt plaintext
+    ciphertext_len = 0;
+    EVP_EncryptUpdate(ctx, engine_ciphertext.data(), &ciphertext_len, reinterpret_cast<const uint8_t*>(plaintext.data()), plaintext.size());
+    final_len = 0;
+    EVP_EncryptFinal_ex(ctx, engine_ciphertext.data() + ciphertext_len, &final_len);
+    // Clean up and resize output buffer
+    EVP_CIPHER_CTX_free(ctx);
+    ciphertext_len += final_len;
+    engine_ciphertext.resize(ciphertext_len);
+
+    // Check encrypted data
+    EXPECT_EQ(engine_ciphertext, ciphertext);
+
+    // Decrypt ciphertext
+    std::string decrypted_engine;
+    decrypted_engine.resize(ciphertext_len);
+    ctx = EVP_CIPHER_CTX_new();
+    EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), engine, (unsigned char*)key.data(), (unsigned char*)iv.data());
+    int plaintext_len_engine = 0;
+    EVP_DecryptUpdate(ctx, (unsigned char*)decrypted_engine.data(), &plaintext_len_engine, (unsigned char*)engine_ciphertext.data(), engine_ciphertext.size());
+    int final_len_engine = 0;
+    EVP_DecryptFinal_ex(ctx, (unsigned char*)decrypted_engine.data() + plaintext_len_engine, &final_len_engine);
+    EVP_CIPHER_CTX_free(ctx);
+    plaintext_len_engine += final_len_engine;
+    decrypted_engine.resize(plaintext_len_engine);
+    
+    // Check decrypted data
+    EXPECT_EQ(plaintext_len_engine, plaintext_len);
+    EXPECT_EQ(decrypted_engine, decrypted_sw);
 }
 
 TEST(Test, ChaCha20)
 {
+    ASSERT_NE(engine, nullptr);
+
     // plaintext
     std::string plaintext("Encrypt this message");
 
@@ -208,11 +270,68 @@ TEST(Test, ChaCha20)
     int plaintext_len = 0;
     EVP_DecryptUpdate(ctx, (unsigned char*)decrypted_sw.data(), &plaintext_len, (unsigned char*)ciphertext.data(), ciphertext.size());
     final_len = 0;
-    EVP_EncryptFinal_ex(ctx, (unsigned char*)decrypted_sw.data() + plaintext_len, &final_len);
+    EVP_DecryptFinal_ex(ctx, (unsigned char*)decrypted_sw.data() + plaintext_len, &final_len);
     EVP_CIPHER_CTX_free(ctx);
     plaintext_len += final_len;
     decrypted_sw.resize(plaintext_len);
 
     // test if worked as expected
     EXPECT_EQ(decrypted_sw, plaintext);
+
+    // check if engine has cipher
+    const EVP_CIPHER* cipher = ENGINE_get_cipher(engine, NID_chacha20);
+    ASSERT_NE(cipher, nullptr);
+
+    // load engine cipher params
+    int engine_blocksize = EVP_CIPHER_block_size(cipher);   /* 16 */
+    int engine_keylen = EVP_CIPHER_key_length(cipher);      /* 32 */
+    int engine_ivlen = EVP_CIPHER_iv_length(cipher);        /* 16 */
+
+    // check engine cipher params
+    EXPECT_EQ(engine_blocksize, sw_blocksize);
+    EXPECT_EQ(engine_keylen, sw_keylen);
+    EXPECT_EQ(engine_ivlen, sw_ivlen);
+
+    // encrypt with engine
+    ctx = EVP_CIPHER_CTX_new();
+    EVP_EncryptInit_ex(ctx, EVP_chacha20(), engine, (unsigned char*)key.data(), (unsigned char*)nonce.data());
+
+    // Calculate output buffer size
+    std::vector<uint8_t> engine_ciphertext(outlen);
+
+    // Encrypt plaintext
+    ciphertext_len = 0;
+    EVP_EncryptUpdate(ctx, engine_ciphertext.data(), &ciphertext_len, reinterpret_cast<const uint8_t*>(plaintext.data()), plaintext.size());
+    final_len = 0;
+    EVP_EncryptFinal_ex(ctx, engine_ciphertext.data() + ciphertext_len, &final_len);
+    // Clean up and resize output buffer
+    EVP_CIPHER_CTX_free(ctx);
+    ciphertext_len += final_len;
+    engine_ciphertext.resize(ciphertext_len);
+
+    // Check encrypted data
+    EXPECT_EQ(engine_ciphertext, ciphertext);
+
+    // Decrypt ciphertext
+    std::string decrypted_engine;
+    decrypted_engine.resize(ciphertext_len);
+    ctx = EVP_CIPHER_CTX_new();
+    EVP_DecryptInit_ex(ctx, EVP_chacha20(), engine, (unsigned char*)key.data(), (unsigned char*)nonce.data());
+    int plaintext_len_engine = 0;
+    EVP_DecryptUpdate(ctx, (unsigned char*)decrypted_engine.data(), &plaintext_len_engine, (unsigned char*)engine_ciphertext.data(), engine_ciphertext.size());
+    int final_len_engine = 0;
+    EVP_DecryptFinal_ex(ctx, (unsigned char*)decrypted_engine.data() + plaintext_len_engine, &final_len_engine);
+    EVP_CIPHER_CTX_free(ctx);
+    plaintext_len_engine += final_len_engine;
+    decrypted_engine.resize(plaintext_len_engine);
+    
+    // Check decrypted data
+    EXPECT_EQ(plaintext_len_engine, plaintext_len);
+    EXPECT_EQ(decrypted_engine, decrypted_sw);
+}
+
+TEST(Test, LoadPrivateKey)
+{
+    ASSERT_NE(engine, nullptr);
+    
 }

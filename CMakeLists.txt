@@ -36,7 +36,7 @@ message("OpenSSL_SSL_LIB: ${OPENSSL_SSL_LIBRARY}")
 set(ENGINE_IMPL_NAME mbengineimpl)
 
 # Set the source files for your engine
-set(ENGINE_IMPL_SRCS engine_link.cpp)
+set(ENGINE_IMPL_SRCS engine_link.cpp engine_link_digests.cpp engine_link_sym_ciphers.cpp engine_link_pkey.cpp)
 
 add_library(${ENGINE_IMPL_NAME} SHARED ${ENGINE_IMPL_SRCS})
 target_include_directories(${ENGINE_IMPL_NAME} PRIVATE ${OPENSSL_INCLUDE_DIR})

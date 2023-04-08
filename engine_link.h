@@ -25,22 +25,20 @@ int sha384_final(EVP_MD_CTX *ctx, unsigned char *md);
 int sha384_cleanup(EVP_MD_CTX *ctx);
 size_t sha384_size();
 
-// /* aes256 cbc mapping*/
-// int aes256_cbc_init(EVP_CIPHER_CTX * ctx, const unsigned char *key, const unsigned char *iv, int enc);
-// int aes256_cbc_do_cipher(EVP_CIPHER_CTX * ctx, unsigned char *out, const unsigned char *in, size_t inlen);
-// int aes256_cbc_cleanup(EVP_CIPHER_CTX *ctx);
+/* aes256 cbc mapping*/
+int aes256_cbc_init(EVP_CIPHER_CTX * ctx, const unsigned char *key, const unsigned char *iv, int enc);
+int aes256_cbc_do_cipher(EVP_CIPHER_CTX * ctx, unsigned char *out, const unsigned char *in, size_t inlen);
+int aes256_cbc_cleanup(EVP_CIPHER_CTX *ctx);
+size_t aes256_cbc_size();
 
-// /* chacha20 mapping*/
-// int chacha20_init(EVP_CIPHER_CTX * ctx, const unsigned char *key, const unsigned char *iv, int enc);
-// int chacha20_do_cipher(EVP_CIPHER_CTX * ctx, unsigned char *out, const unsigned char *in, size_t inlen);
-// int chacha20_cleanup(EVP_CIPHER_CTX *ctx);
+/* chacha20 mapping*/
+int chacha20_init(EVP_CIPHER_CTX * ctx, const unsigned char *key, const unsigned char *iv, int enc);
+int chacha20_do_cipher(EVP_CIPHER_CTX * ctx, unsigned char *out, const unsigned char *in, size_t inlen);
+int chacha20_cleanup(EVP_CIPHER_CTX *ctx);
+size_t chacha20_size();
 
-
-
-
-
-// // Loads the specified EC key into private key pointer
-// EVP_PKEY* load_ec_key(const char* keyfile);
+/* private key loader */
+EVP_PKEY* load_ec_key(const char* keyfile);
 
 
 

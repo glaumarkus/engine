@@ -422,12 +422,16 @@ TEST(Test, Hm)
 
     // sign with engine
     mdctx = EVP_MD_CTX_new();
+    std::cout << "\n";
     ret = EVP_DigestSignInit(mdctx, nullptr, EVP_sha256(), engine, pkey_engine);
+    std::cout << "\n";
     // ret = EVP_DigestSignInit(mdctx, nullptr, EVP_sha256(), engine, pkey_sw);
     EXPECT_EQ(ret, 1);
-    // ret = EVP_DigestSignUpdate(mdctx, (unsigned char*)msg.data(), msg.size());
-    // EXPECT_EQ(ret, 1);
-    // ret = EVP_DigestSignFinal(mdctx, NULL, &siglen);
+    ret = EVP_DigestSignUpdate(mdctx, (unsigned char*)msg.data(), msg.size());
+    EXPECT_EQ(ret, 1);
+    std::cout << "\n";
+    ret = EVP_DigestSignFinal(mdctx, NULL, &siglen);
+    std::cout << "\n";
     // // resize signature
     // signature.resize(siglen);
     // EVP_DigestSignFinal(mdctx, (unsigned char*)signature.data(), &siglen);

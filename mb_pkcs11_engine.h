@@ -24,8 +24,9 @@ static int engine_digest_selector(ENGINE *e, const EVP_MD **digest,
         const int **nids, int nid);
 static int engine_cipher_selector(ENGINE *e, const EVP_CIPHER **cipher, 
         const int **nids, int nid);
-// static int engine_pkey_selector(ENGINE *e, EVP_PKEY_METHOD **method,
-//         const int **nids, int nid);
+static int engine_pkey_selector(ENGINE *e, EVP_PKEY_METHOD **method,
+        const int **nids, int nid);
+
 // static int engine_ec_selector(ENGINE *e, EVP_PKEY_METHOD **method,
 //         const int **nids, int nid);
 
@@ -66,8 +67,11 @@ static EVP_PKEY *engine_load_private_key(ENGINE *engine, const char *key_id,
 // UI_METHOD *ui_method, void *callback_data);
 
 
-
-
+/* pkey mapping */
+static inline int engine_ecdsa_init(EVP_PKEY_CTX *ctx);
+static inline int engine_ecdsa_digest_sign(EVP_MD_CTX *ctx, unsigned char *sig, size_t *siglen, const unsigned char *tbs, size_t tbslen);
+static inline void engine_ecdsa_cleanup(EVP_PKEY_CTX *ctx);
+static EVP_PKEY_METHOD* init_ecdsa_method();
 
 
 

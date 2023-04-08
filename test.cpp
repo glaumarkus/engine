@@ -421,9 +421,10 @@ TEST(Test, Hm)
     EXPECT_EQ(type, EVP_PKEY_EC);
 
     // sign with engine
-    // mdctx = EVP_MD_CTX_new();
+    mdctx = EVP_MD_CTX_new();
+    ret = EVP_DigestSignInit(mdctx, nullptr, EVP_sha256(), engine, pkey_engine);
     // ret = EVP_DigestSignInit(mdctx, nullptr, EVP_sha256(), engine, pkey_sw);
-    // EXPECT_EQ(ret, 1);
+    EXPECT_EQ(ret, 1);
     // ret = EVP_DigestSignUpdate(mdctx, (unsigned char*)msg.data(), msg.size());
     // EXPECT_EQ(ret, 1);
     // ret = EVP_DigestSignFinal(mdctx, NULL, &siglen);

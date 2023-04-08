@@ -16,6 +16,103 @@ RAND_METHOD engine_random_method = {
         engine_random_status        /* status */
 };
 
+
+static int pkey_methods_ids[] = {NID_X9_62_id_ecPublicKey};
+static int engine_pkey_selector(ENGINE *e, EVP_PKEY_METHOD **method,
+        const int **nids, int nid) {
+    
+    printf("[Engine]: engine_digest_selector called!\n");
+    int ok = 1;
+
+    if (!method) {
+        *nids = pkey_methods_ids;
+        printf("[Engine]: \n Method is empty! Nid:%d\n", nid);
+        return 2;
+    }
+
+    switch (nid)
+    {
+        // this comes out when calling with the key & sha256
+        case NID_X9_62_id_ecPublicKey:
+            *method = init_ecdsa_method();
+            break;
+        default:
+            *method = NULL;
+            ok = 0;
+    }
+
+    return ok;
+}
+
+
+static inline int engine_ecdsa_init(EVP_PKEY_CTX *ctx)
+{
+    printf("[Engine]: engine_ecdsa_cleanup called!\n");
+    return 1;
+}
+static inline void engine_ecdsa_cleanup(EVP_PKEY_CTX *ctx) {
+    printf("[Engine]: engine_ecdsa_cleanup called!\n");
+}
+
+static inline int engine_ecdsa_ctrl(EVP_PKEY_CTX *ctx, int type, int p1, void *p2)
+{
+    printf("[Engine]: engine_ecdsa_ctrl called!\n");
+    return 1;
+}
+
+static inline int engine_ecdsa_ctrl_str(EVP_PKEY_CTX *ctx, const char *type, const char *value)
+{
+    printf("[Engine]: engine_ecdsa_ctrl_str called!\n");
+    return 1;
+}
+
+static inline int engine_ecdsa_sign_init(EVP_PKEY_CTX *ctx)
+{
+    printf("[Engine]: engine_ecdsa_sign_init called!\n");
+    return 1;
+}
+static inline int engine_ecdsa_sign(EVP_PKEY_CTX *ctx, unsigned char *sig, size_t *siglen, const unsigned char *tbs, size_t tbslen)
+{
+    printf("[Engine]: engine_ecdsa_sign called!\n");
+    return 1;
+}
+
+static inline int engine_ecdsa_verifiy_init(EVP_PKEY_CTX *ctx)
+{
+    printf("[Engine]: engine_ecdsa_verifiy_init called!\n");
+    return 1;
+}
+
+static inline int engine_ecdsa_verify(EVP_PKEY_CTX *ctx, const unsigned char *sig, size_t siglen, const unsigned char *tbs, size_t tbslen)
+{
+    printf("[Engine]: engine_ecdsa_verify called!\n");
+    return 1;
+}
+
+static inline int engine_ecdsa_digest_custom(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx)
+{
+    printf("[Engine]: engine_ecdsa_digest_custom called!\n");
+    // derive the hash here
+    return 1;
+}
+
+static EVP_PKEY_METHOD* engine_ecdsa_method = NULL;
+static EVP_PKEY_METHOD* init_ecdsa_method(){
+    printf("[Engine]: init_ecdsa_method called!\n");
+    if (engine_ecdsa_method == NULL)
+    {
+        engine_ecdsa_method = EVP_PKEY_meth_new(NID_brainpoolP384r1, EVP_PKEY_FLAG_AUTOARGLEN);
+        EVP_PKEY_meth_set_init(engine_ecdsa_method, engine_ecdsa_init);
+        EVP_PKEY_meth_set_cleanup(engine_ecdsa_method, engine_ecdsa_cleanup); 
+        EVP_PKEY_meth_set_ctrl(engine_ecdsa_method, engine_ecdsa_ctrl, engine_ecdsa_ctrl_str);
+        EVP_PKEY_meth_set_sign(engine_ecdsa_method, engine_ecdsa_sign_init, engine_ecdsa_sign);
+        EVP_PKEY_meth_set_verify(engine_ecdsa_method, engine_ecdsa_verifiy_init, engine_ecdsa_verify);
+        EVP_PKEY_meth_set_digest_custom(engine_ecdsa_method, engine_ecdsa_digest_custom);
+    }
+    return engine_ecdsa_method;
+};
+
+
 /*
 * This gets called when the engine is bound from another program
 */
@@ -29,9 +126,9 @@ int engine_bind(ENGINE * e, const char *id)
         !ENGINE_set_RAND(e, &engine_random_method) ||
         !ENGINE_set_digests(e, &engine_digest_selector) ||
         !ENGINE_set_ciphers(e, &engine_cipher_selector) ||
-        !ENGINE_set_load_privkey_function(e, &engine_load_private_key)
+        !ENGINE_set_load_privkey_function(e, &engine_load_private_key) ||
+        !ENGINE_set_pkey_meths(e, &engine_pkey_selector) 
         // !ENGINE_set_ctrl_function(e, engine_ctrl_cmd_string) ||
-        // !ENGINE_set_pkey_meths(e, &engine_pkey_selector) ||
         // !ENGINE_set_load_ssl_client_cert_function(e, &engine_load_certificate) ||
         // !ENGINE_set_EC(e, ecdsa_method) ||
         // !ENGINE_set_DSA(e, dsa_method)
@@ -278,37 +375,6 @@ static inline int engine_chacha20_cleanup(EVP_CIPHER_CTX *ctx)
 
 
 
-     
-// static int pkey_methods_ids[] = {NID_brainpoolP384r1};
-// static int engine_pkey_selector(ENGINE *e, EVP_PKEY_METHOD **method,
-//         const int **nids, int nid) {
-    
-//     printf("[Engine]: engine_digest_selector called!\n");
-//     int ok = 1;
-
-//     if (!method) {
-//         *nids = pkey_methods_ids;
-//         printf("[Engine]: \n Method is empty! Nid:%d\n", nid);
-//         return 2;
-//     }
-
-//     switch (nid)
-//     {
-//         case NID_brainpoolP384r1:
-
-//             printf("[Engine]: DigestSelector chose sha256\n");
-//             *method = init_ecdh_method();
-//             break;
-//         default:
-//             *method = NULL;
-//             ok = 0;
-//     }
-
-//     return ok;
-// }
-
-
-
 
 /*
 * This will be used to get the token / id of the private key
@@ -498,7 +564,6 @@ static int engine_random_status(void)
 */
 static int engine_get_random_bytes(unsigned char *buffer, int num) {
     printf("[Engine]: engine_get_random_bytes called for %d bytes\n", num);
-    memset(buffer,1,num);
-    return 1;
+    return RAND_bytes(buffer, sizeof(num));
 }
 

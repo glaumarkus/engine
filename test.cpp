@@ -359,5 +359,81 @@ TEST(Test, LoadPrivateKey)
     // compare the key params
     ret = EVP_PKEY_cmp_parameters(pkey_sw, pkey_engine);
     EXPECT_TRUE(ret);
+}
+
+TEST(Test, Hm)
+{
+    ASSERT_NE(engine, nullptr);
+
+    // Setup vars
+    EVP_PKEY* pkey_sw = nullptr;
+    EC_KEY* eckey = nullptr;
+    int ret = 0; 
+    std::string path_to_key = "/home/glaum/engine/keys/private_key.pem";
+    size_t siglen = 0;
+    std::vector<uint8_t> signature;
+    std::string msg ("Sign this example message with EC private key");
+
+    // Load private key with sw
+    FILE* fp = fopen(path_to_key.c_str(), "r");
+    pkey_sw = EVP_PKEY_new();
+    eckey = EC_KEY_new_by_curve_name(NID_brainpoolP384r1);
+    PEM_read_ECPrivateKey(fp, &eckey, nullptr, nullptr);
+    ret = EVP_PKEY_set1_EC_KEY(pkey_sw, eckey);
+    EC_KEY_free(eckey);
+    EXPECT_NE(EVP_PKEY_id(pkey_sw), EVP_PKEY_NONE);   
+
+    // Check if type matches
+    int type = EVP_PKEY_base_id(pkey_sw);
+    EXPECT_EQ(type, EVP_PKEY_EC);
+
+    // Sign with sw
+    EVP_MD_CTX *mdctx = NULL;
+    mdctx = EVP_MD_CTX_new();
+    ret = EVP_DigestSignInit(mdctx, NULL, EVP_sha256(), NULL, pkey_sw);
+    EXPECT_EQ(ret, 1);
+    ret = EVP_DigestSignUpdate(mdctx, (unsigned char*)msg.data(), msg.size());
+    EXPECT_EQ(ret, 1);
+    ret = EVP_DigestSignFinal(mdctx, NULL, &siglen);
+    // resize signature
+    signature.resize(siglen);
+    EVP_DigestSignFinal(mdctx, (unsigned char*)signature.data(), &siglen);
+    std::cout << "Digest: " << base64_encode(signature) << std::endl;
+    EVP_MD_CTX_free(mdctx);
+    
+    // Do verify
+    mdctx = EVP_MD_CTX_new();
+    ret = EVP_DigestVerifyInit(mdctx, nullptr, EVP_sha256(), NULL, pkey_sw);
+    EXPECT_EQ(ret, 1);
+    ret = EVP_DigestVerifyUpdate(mdctx, (unsigned char*)msg.data(), msg.size());
+    EXPECT_EQ(ret, 1);
+    ret = EVP_DigestVerifyFinal(mdctx, (unsigned char*)signature.data(), siglen);
+    EXPECT_EQ(ret, 1);
+    EVP_MD_CTX_free(mdctx);
+
+    // load key with engine
+    EVP_PKEY* pkey_engine = nullptr;
+    pkey_engine = ENGINE_load_private_key(engine, path_to_key.c_str(), nullptr, nullptr);
+    EXPECT_NE(pkey_engine, nullptr);
+
+    // Check if type matches
+    type = EVP_PKEY_base_id(pkey_engine);
+    EXPECT_EQ(type, EVP_PKEY_EC);
+
+    // sign with engine
+    // mdctx = EVP_MD_CTX_new();
+    // ret = EVP_DigestSignInit(mdctx, nullptr, EVP_sha256(), engine, pkey_sw);
+    // EXPECT_EQ(ret, 1);
+    // ret = EVP_DigestSignUpdate(mdctx, (unsigned char*)msg.data(), msg.size());
+    // EXPECT_EQ(ret, 1);
+    // ret = EVP_DigestSignFinal(mdctx, NULL, &siglen);
+    // // resize signature
+    // signature.resize(siglen);
+    // EVP_DigestSignFinal(mdctx, (unsigned char*)signature.data(), &siglen);
+    // std::cout << "Digest: " << base64_encode(signature) << std::endl;
+    // EVP_MD_CTX_free(mdctx);
+
+
+
 
 }

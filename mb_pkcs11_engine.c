@@ -16,6 +16,111 @@ RAND_METHOD engine_random_method = {
         engine_random_status        /* status */
 };
 
+/*
+* This gets called when the engine is bound from another program
+*/
+int engine_bind(ENGINE * e, const char *id)
+{
+    printf("[Engine]: engine_bind called\n");
+    if (!ENGINE_set_id(e, mb_engine_id) ||
+        !ENGINE_set_name(e, mb_engine_name) ||
+        !ENGINE_set_init_function(e, engine_init) ||
+        !ENGINE_set_finish_function(e, engine_finish) ||
+        !ENGINE_set_RAND(e, &engine_random_method) ||
+        !ENGINE_set_digests(e, &engine_digest_selector) ||
+        !ENGINE_set_ciphers(e, &engine_cipher_selector) ||
+        !ENGINE_set_load_privkey_function(e, &engine_load_private_key)
+        // !ENGINE_set_ctrl_function(e, engine_ctrl_cmd_string) ||
+        // !ENGINE_set_pkey_meths(e, &engine_pkey_selector) ||
+        // !ENGINE_set_load_ssl_client_cert_function(e, &engine_load_certificate) ||
+        // !ENGINE_set_EC(e, ecdsa_method) ||
+        // !ENGINE_set_DSA(e, dsa_method)
+        )
+        return 0;
+    // now bind the ec stuff??
+    //ECDH_METHOD *ecdh_method = ECDH_METHOD_new(EC_KEY_OpenSSL());
+
+    return 1;
+}
+
+
+IMPLEMENT_DYNAMIC_BIND_FN(engine_bind)
+IMPLEMENT_DYNAMIC_CHECK_FN()
+
+
+/* digest selector */ 
+static int digest_ids[] = {NID_sha256, NID_sha3_384};
+static int engine_digest_selector(ENGINE *e, const EVP_MD **digest,
+        const int **nids, int nid) {
+    
+    printf("[Engine]: engine_digest_selector called!\n");
+    int ok = 1;
+
+    if (!digest) {
+        *nids = digest_ids;
+        printf("[Engine]: \n Digest is empty! Nid:%d\n", nid);
+        return 2;
+    }
+
+    switch (nid)
+    {
+        case NID_sha256:
+            *digest = init_engine_sha256_method();
+            break;
+        case NID_sha3_384:
+            *digest = init_engine_sha384_method();
+            break;
+        default:
+            *digest = NULL;
+            ok = 0;
+    }
+
+    return ok;
+}
+
+/* cipher selector */ 
+static int cipher_ids[] = {NID_aes_256_cbc, NID_chacha20};
+static int engine_cipher_selector(ENGINE *e, const EVP_CIPHER **cipher, const int **nids, int nid)
+{
+    printf("[Engine]: engine_cipher_selector called!\n");
+    int ok = 1;
+
+    if (!cipher)
+    {
+        *nids = cipher_ids;
+        printf("[Engine]: \n Cipher is empty! Nid:%d\n", nid);
+        return 2;
+    }
+    
+    switch (nid)
+    {
+        case NID_aes_256_cbc:
+            *cipher = init_engine_aes256_cbc_method();
+            break;
+        case NID_chacha20:
+            *cipher = init_engine_chacha20_method();
+            break;
+        default:
+            *cipher = NULL;
+            ok = 0;
+    }
+    return ok;
+}
+
+
+static EVP_PKEY *engine_load_private_key(ENGINE *engine, const char *key_id,
+                              UI_METHOD *ui_method, void *callback_data) {
+    printf("[Engine]: engine_load_private_key called!\n");
+    return load_ec_key(key_id);
+}
+
+
+
+
+
+/*
+* Method implementations
+*/
 
 /* sha256 method */
 static EVP_MD* engine_sha256_method = NULL;
@@ -166,107 +271,6 @@ static inline int engine_chacha20_cleanup(EVP_CIPHER_CTX *ctx)
     printf("[Engine]: engine_chacha20_cleanup called!\n");
     return chacha20_cleanup(ctx); 
 }
-
-
-
-/*
-* This gets called when the engine is bound from another program
-*/
-int engine_bind(ENGINE * e, const char *id)
-{
-    printf("[Engine]: engine_bind called\n");
-    if (!ENGINE_set_id(e, mb_engine_id) ||
-        !ENGINE_set_name(e, mb_engine_name) ||
-        !ENGINE_set_init_function(e, engine_init) ||
-        !ENGINE_set_finish_function(e, engine_finish) ||
-        !ENGINE_set_RAND(e, &engine_random_method) ||
-        !ENGINE_set_digests(e, &engine_digest_selector) ||
-        !ENGINE_set_ciphers(e, &engine_cipher_selector) 
-        //!ENGINE_set_load_privkey_function(e, &engine_load_private_key)
-        // !ENGINE_set_ctrl_function(e, engine_ctrl_cmd_string) ||
-        // !ENGINE_set_pkey_meths(e, &engine_pkey_selector) ||
-        // !ENGINE_set_load_ssl_client_cert_function(e, &engine_load_certificate) ||
-        // !ENGINE_set_EC(e, ecdsa_method) ||
-        // !ENGINE_set_DSA(e, dsa_method)
-        )
-        return 0;
-    // now bind the ec stuff??
-    //ECDH_METHOD *ecdh_method = ECDH_METHOD_new(EC_KEY_OpenSSL());
-
-    return 1;
-}
-
-
-IMPLEMENT_DYNAMIC_BIND_FN(engine_bind)
-IMPLEMENT_DYNAMIC_CHECK_FN()
-
-
-/* digest selector */ 
-static int digest_ids[] = {NID_sha256, NID_sha3_384};
-static int engine_digest_selector(ENGINE *e, const EVP_MD **digest,
-        const int **nids, int nid) {
-    
-    printf("[Engine]: engine_digest_selector called!\n");
-    int ok = 1;
-
-    if (!digest) {
-        *nids = digest_ids;
-        printf("[Engine]: \n Digest is empty! Nid:%d\n", nid);
-        return 2;
-    }
-
-    switch (nid)
-    {
-        case NID_sha256:
-            *digest = init_engine_sha256_method();
-            break;
-        case NID_sha3_384:
-            *digest = init_engine_sha384_method();
-            break;
-        default:
-            *digest = NULL;
-            ok = 0;
-    }
-
-    return ok;
-}
-
-/* cipher selector */ 
-static int cipher_ids[] = {NID_aes_256_cbc, NID_chacha20};
-static int engine_cipher_selector(ENGINE *e, const EVP_CIPHER **cipher, const int **nids, int nid)
-{
-    printf("[Engine]: engine_cipher_selector called!\n");
-    int ok = 1;
-
-    if (!cipher)
-    {
-        *nids = cipher_ids;
-        printf("[Engine]: \n Cipher is empty! Nid:%d\n", nid);
-        return 2;
-    }
-    
-    switch (nid)
-    {
-        case NID_aes_256_cbc:
-            *cipher = init_engine_aes256_cbc_method();
-            break;
-        case NID_chacha20:
-            *cipher = init_engine_chacha20_method();
-            break;
-        default:
-            *cipher = NULL;
-            ok = 0;
-    }
-    return ok;
-}
-
-
-// static EVP_PKEY *engine_load_private_key(ENGINE *engine, const char *key_id,
-//                               UI_METHOD *ui_method, void *callback_data) {
-//     printf("[Engine]: engine_load_private_key called!\n");
-//     return load_ec_key(key_id);
-// }
-
 
 
 

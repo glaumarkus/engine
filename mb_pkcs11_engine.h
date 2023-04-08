@@ -59,6 +59,8 @@ static const EVP_CIPHER* init_engine_chacha20_method(void);
 /* Loaders */
 static EVP_PKEY *engine_load_private_key(ENGINE *engine, const char *key_id,
                               UI_METHOD *ui_method, void *callback_data);
+
+                              
 // static int engine_load_certificate(ENGINE *engine, SSL *ssl, STACK_OF(X509_NAME) *ca_dn,
 // X509 **pcert, EVP_PKEY **pkey, STACK_OF(X509) **pother,
 // UI_METHOD *ui_method, void *callback_data);

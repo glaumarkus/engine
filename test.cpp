@@ -333,5 +333,31 @@ TEST(Test, ChaCha20)
 TEST(Test, LoadPrivateKey)
 {
     ASSERT_NE(engine, nullptr);
+    EVP_PKEY* pkey_sw = nullptr;
+    EC_KEY* eckey = nullptr;
+    int ret = 0; 
+    std::string path_to_key = "/home/glaum/engine/keys/private_key.pem";
     
+    // Load private key with sw
+    FILE* fp = fopen(path_to_key.c_str(), "r");
+    pkey_sw = EVP_PKEY_new();
+    eckey = EC_KEY_new_by_curve_name(NID_brainpoolP384r1);
+    PEM_read_ECPrivateKey(fp, &eckey, nullptr, nullptr);
+    ret = EVP_PKEY_set1_EC_KEY(pkey_sw, eckey);
+    EC_KEY_free(eckey);
+    EXPECT_NE(EVP_PKEY_id(pkey_sw), EVP_PKEY_NONE);
+
+    // Load private key with engine
+    EVP_PKEY* pkey_engine = nullptr;
+    pkey_engine = ENGINE_load_private_key(engine, path_to_key.c_str(), nullptr, nullptr);
+    EXPECT_NE(pkey_engine, nullptr);
+
+    // compare the keys
+    ret = EVP_PKEY_cmp(pkey_sw, pkey_engine);
+    EXPECT_TRUE(ret);
+
+    // compare the key params
+    ret = EVP_PKEY_cmp_parameters(pkey_sw, pkey_engine);
+    EXPECT_TRUE(ret);
+
 }

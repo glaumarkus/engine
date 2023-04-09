@@ -48,15 +48,19 @@ static int engine_pkey_selector(ENGINE *e, EVP_PKEY_METHOD **method,
 static inline int engine_ecdsa_init(EVP_PKEY_CTX *ctx)
 {
     printf("[Engine]: engine_ecdsa_cleanup called!\n");
-    return 1;
+    return ecdsa_init(ctx);
 }
 static inline void engine_ecdsa_cleanup(EVP_PKEY_CTX *ctx) {
     printf("[Engine]: engine_ecdsa_cleanup called!\n");
+    ecdsa_cleanup(ctx);
 }
 
 static inline int engine_ecdsa_ctrl(EVP_PKEY_CTX *ctx, int type, int p1, void *p2)
 {
     printf("[Engine]: engine_ecdsa_ctrl called!\n");
+    // printf("Params: \n");
+    // printf("ctx: %p, type: %d, p1: %d, p2: %p\n", ctx, type, p1, p2);
+    // https://www.openssl.org/docs/man1.1.1/man3/EVP_PKEY_CTX_ctrl.html    
     return 1;
 }
 
@@ -66,34 +70,47 @@ static inline int engine_ecdsa_ctrl_str(EVP_PKEY_CTX *ctx, const char *type, con
     return 1;
 }
 
-static inline int engine_ecdsa_sign_init(EVP_PKEY_CTX *ctx)
-{
-    printf("[Engine]: engine_ecdsa_sign_init called!\n");
-    return 1;
-}
-static inline int engine_ecdsa_sign(EVP_PKEY_CTX *ctx, unsigned char *sig, size_t *siglen, const unsigned char *tbs, size_t tbslen)
-{
-    printf("[Engine]: engine_ecdsa_sign called!\n");
-    return 1;
-}
+// // static inline int engine_ecdsa_sign_init(EVP_PKEY_CTX *ctx)
+// // {
+// //     printf("[Engine]: engine_ecdsa_sign_init called!\n");
+// //     return ecdsa_sign_init(ctx);
+// //     return 1;
+// // }
+// // static inline int engine_ecdsa_sign(EVP_PKEY_CTX *ctx, unsigned char *sig, size_t *siglen, const unsigned char *tbs, size_t tbslen)
+// // {
+// //     printf("[Engine]: engine_ecdsa_sign called!\n");
+// //     return ecdsa_sign(ctx, sig, siglen, tbs, tbslen);
+// //     return 1;
+// // }
 
-static inline int engine_ecdsa_verifiy_init(EVP_PKEY_CTX *ctx)
-{
-    printf("[Engine]: engine_ecdsa_verifiy_init called!\n");
-    return 1;
-}
+// // static inline int engine_ecdsa_verifiy_init(EVP_PKEY_CTX *ctx)
+// // {
+// //     printf("[Engine]: engine_ecdsa_verifiy_init called!\n");
+// //     return 1;
+// // }
 
-static inline int engine_ecdsa_verify(EVP_PKEY_CTX *ctx, const unsigned char *sig, size_t siglen, const unsigned char *tbs, size_t tbslen)
-{
-    printf("[Engine]: engine_ecdsa_verify called!\n");
-    return 1;
-}
+// // static inline int engine_ecdsa_verify(EVP_PKEY_CTX *ctx, const unsigned char *sig, size_t siglen, const unsigned char *tbs, size_t tbslen)
+// // {
+// //     printf("[Engine]: engine_ecdsa_verify called!\n");
+// //     return 1;
+// // }
 
 static inline int engine_ecdsa_digest_custom(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx)
 {
     printf("[Engine]: engine_ecdsa_digest_custom called!\n");
-    // derive the hash here
-    return 1;
+    return ecdsa_custom_digest(ctx, mctx);
+}
+
+static inline int engine_signctx_init(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx)
+{
+    printf("[Engine]: engine_signctx_init called!\n");
+    return ecdsa_signctx_init(ctx, mctx);
+}
+
+static inline int engine_signctx(EVP_PKEY_CTX *ctx, unsigned char *sig, size_t *siglen, EVP_MD_CTX *mctx)
+{
+    printf("[Engine]: engine_signctx called!\n");
+    return ecdsa_signctx(ctx, sig, siglen, mctx);
 }
 
 static EVP_PKEY_METHOD* engine_ecdsa_method = NULL;
@@ -105,9 +122,8 @@ static EVP_PKEY_METHOD* init_ecdsa_method(){
         EVP_PKEY_meth_set_init(engine_ecdsa_method, engine_ecdsa_init);
         EVP_PKEY_meth_set_cleanup(engine_ecdsa_method, engine_ecdsa_cleanup); 
         EVP_PKEY_meth_set_ctrl(engine_ecdsa_method, engine_ecdsa_ctrl, engine_ecdsa_ctrl_str);
-        EVP_PKEY_meth_set_sign(engine_ecdsa_method, engine_ecdsa_sign_init, engine_ecdsa_sign);
-        EVP_PKEY_meth_set_verify(engine_ecdsa_method, engine_ecdsa_verifiy_init, engine_ecdsa_verify);
         EVP_PKEY_meth_set_digest_custom(engine_ecdsa_method, engine_ecdsa_digest_custom);
+        EVP_PKEY_meth_set_signctx(engine_ecdsa_method, engine_signctx_init, engine_signctx);
     }
     return engine_ecdsa_method;
 };

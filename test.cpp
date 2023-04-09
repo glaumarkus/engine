@@ -458,7 +458,7 @@ TEST(Test, Hm)
     // print memory address of key and hash evp_md
     // printf("key: %p, md: %p\n", pkey_engine, ENGINE_get_digest(engine, NID_sha256));
 
-    ret = EVP_DigestSignInit(mdctx, nullptr, EVP_sha3_384(), engine, pkey_engine);
+    ret = EVP_DigestSignInit(mdctx, nullptr, EVP_sha256(), engine, pkey_engine);
     std::cout << "\n";
     EXPECT_EQ(ret, 1);
     ret = EVP_DigestSignUpdate(mdctx, (unsigned char*)msg.data(), msg.size());

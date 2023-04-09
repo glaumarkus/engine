@@ -43,9 +43,14 @@ int ecdsa_signctx_init(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx)
 int ecdsa_signctx(EVP_PKEY_CTX *ctx, unsigned char *sig, size_t *siglen, EVP_MD_CTX *mctx)
 {
     // unsigned char ss[104];
+    if (sig == nullptr)
+    {
+        EVP_MD_CTX_set_flags(mctx, EVP_MD_CTX_FLAG_FINALISE);
+    }
+    
     int ret = EVP_DigestSignFinal(ecdsa_ctx->ctx, sig, siglen);
-    unsigned char ss[104];
-    ret = EVP_DigestSignFinal(ecdsa_ctx->ctx, ss, siglen);
+    // unsigned char ss[104];
+    // ret = EVP_DigestSignFinal(ecdsa_ctx->ctx, ss, siglen);
 
     // int ret = EVP_DigestSignFinal(ecdsa_ctx->ctx, sig, siglen);
     return ret;
@@ -69,15 +74,32 @@ int ecdsa_custom_digest(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx)
         // convert to sw
         const EVP_MD* alg = EVP_MD_CTX_md(mctx);
         int md_nid = EVP_MD_type(alg);
+        const EVP_MD* mmd;
+        if (md_nid == NID_sha256)
+        {
+            mmd = EVP_sha256();
+        }
+        else if (md_nid == NID_sha3_384)
+        {
+            mmd = EVP_sha3_256();
+        }
         const EVP_MD* alg_sw = EVP_get_digestbynid(md_nid);
         
         // replace ctx
         // EVP_MD_CTX_free(mctx);
         mctx = ecdsa_ctx->ctx;
+        mctx = EVP_MD_CTX_create();
+
+        // const EVP_MD* mmd = EVP_sha256();
 
         // find nid from digest
-        ok = EVP_DigestSignInit(mctx, nullptr, alg_sw, nullptr, ecdsa_ctx->pkey);
+        int ret = 0;
+        // int ret = EVP_DigestSignInit(ecdsa_ctx->ctx, nullptr, alg_sw, nullptr, ecdsa_ctx->pkey);
+        // ret = EVP_DigestSignInit(ecdsa_ctx->ctx, nullptr, EVP_sha256(), nullptr, ecdsa_ctx->pkey);
+        ok = EVP_DigestSignInit(ecdsa_ctx->ctx, nullptr, mmd, nullptr, ecdsa_ctx->pkey);
 
+        // ok = EVP_DigestSignInit(mctx, nullptr, alg_sw, nullptr, ecdsa_ctx->pkey);
+        
         // set update function for ctx
         // EVP_MD_CTX_set_update_fn(mctx, ecdsa_custom_digest_update);
     }

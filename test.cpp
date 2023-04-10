@@ -399,40 +399,10 @@ TEST(Test, Hm)
     // resize signature
     signature.resize(siglen);
     EVP_DigestSignFinal(mdctx, (unsigned char*)signature.data(), &siglen);
-    std::cout << "Digest: " << base64_encode(signature) << std::endl;
+    std::cout << "DigestSW: " << base64_encode(signature) << std::endl;
     EVP_MD_CTX_free(mdctx);
 
-    // different sign with sw
-    unsigned char hash[SHA256_DIGEST_LENGTH];
-    SHA256((unsigned char*)msg.data(), msg.size(), hash);
-    EC_KEY* ec_key = EVP_PKEY_get0_EC_KEY(pkey_sw);
-    ECDSA_SIG *sig = ECDSA_do_sign(hash, SHA256_DIGEST_LENGTH, ec_key);
-    int sig_len = i2d_ECDSA_SIG(sig, NULL);
-
-    // allocate memory for the binary signature
-    unsigned char* sig_buf = (unsigned char*)malloc(sig_len);
-
-    // encode the signature to binary format
-    unsigned char* p = sig_buf;
-    sig_len = i2d_ECDSA_SIG(sig, &p);
-
-    // allocate and copy buffer
-    std::vector<uint8_t> signature_2;
-    signature_2.resize(sig_len);
-    memcpy(signature_2.data(), sig_buf, sig_len);
-    std::cout << "Digest: " << base64_encode(signature_2) << std::endl;
-
-    // Do verify with different sw
-    mdctx = EVP_MD_CTX_new();
-    ret = EVP_DigestVerifyInit(mdctx, nullptr, EVP_sha256(), NULL, pkey_sw);
-    EXPECT_EQ(ret, 1);
-    ret = EVP_DigestVerifyUpdate(mdctx, (unsigned char*)msg.data(), msg.size());
-    EXPECT_EQ(ret, 1);
-    ret = EVP_DigestVerifyFinal(mdctx, (unsigned char*)signature_2.data(), sig_len);
-    EXPECT_EQ(ret, 1);
-    EVP_MD_CTX_free(mdctx);
-
-    // Do verify 1
+    // Do verify sw sign
     mdctx = EVP_MD_CTX_new();
     ret = EVP_DigestVerifyInit(mdctx, nullptr, EVP_sha256(), NULL, pkey_sw);
     EXPECT_EQ(ret, 1);
@@ -454,33 +424,38 @@ TEST(Test, Hm)
     // sign with engine
     mdctx = EVP_MD_CTX_new();
     std::cout << "\n";
-    
-    // print memory address of key and hash evp_md
-    // printf("key: %p, md: %p\n", pkey_engine, ENGINE_get_digest(engine, NID_sha256));
-
     ret = EVP_DigestSignInit(mdctx, nullptr, EVP_sha256(), engine, pkey_engine);
     std::cout << "\n";
     EXPECT_EQ(ret, 1);
     ret = EVP_DigestSignUpdate(mdctx, (unsigned char*)msg.data(), msg.size());
     EXPECT_EQ(ret, 1);
     std::cout << "\n";
-
-    unsigned char ss[104];
-    ret = EVP_DigestSignFinal(mdctx, nullptr, &siglen);
-    signature_engine.resize(104);    
+    // ret = EVP_DigestSignFinal(mdctx, nullptr, &siglen);
+    signature_engine.resize(EVP_PKEY_size(pkey_engine));    
     ret = EVP_DigestSignFinal(mdctx, (unsigned char*)signature_engine.data(), &siglen);
-    std::cout << "Digest: " << base64_encode(signature_engine) << std::endl;
+    signature_engine.resize(siglen);
+    EVP_MD_CTX_free(mdctx);
+    std::cout << "DigestEngine: " << base64_encode(signature_engine) << std::endl;
 
-    /* not working */
-    // siglen = 0;
-    // ret = EVP_DigestSignFinal(mdctx, NULL, &siglen);
-    // signature_engine.resize(siglen);    
-    // ret = EVP_DigestSignFinal(mdctx, (unsigned char*)signature_engine.data(), &siglen);
-    
-    
+    // Do verify engine sign
+    mdctx = EVP_MD_CTX_new();
+    ret = EVP_DigestVerifyInit(mdctx, nullptr, EVP_sha256(), NULL, pkey_sw);
+    EXPECT_EQ(ret, 1);
+    ret = EVP_DigestVerifyUpdate(mdctx, (unsigned char*)msg.data(), msg.size());
+    EXPECT_EQ(ret, 1);
+    ret = EVP_DigestVerifyFinal(mdctx, (unsigned char*)signature_engine.data(), siglen);
+    EXPECT_EQ(ret, 1);
     EVP_MD_CTX_free(mdctx);
 
-
-
-
+    // Do verify of engine sign with engine
+    mdctx = EVP_MD_CTX_new();
+    ret = EVP_DigestVerifyInit(mdctx, nullptr, EVP_sha256(), engine, pkey_sw);
+    EXPECT_EQ(ret, 1);
+    ret = EVP_DigestVerifyUpdate(mdctx, (unsigned char*)msg.data(), msg.size());
+    EXPECT_EQ(ret, 1);
+    ret = EVP_DigestVerifyFinal(mdctx, (unsigned char*)signature_engine.data(), siglen);
+    EXPECT_EQ(ret, 1);
+    EVP_MD_CTX_free(mdctx);
+    
 }
+

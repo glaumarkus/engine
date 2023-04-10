@@ -44,9 +44,11 @@ EVP_PKEY* load_ec_key(const char* keyfile);
 int ecdsa_init(EVP_PKEY_CTX *ctx);
 int ecdsa_cleanup(EVP_PKEY_CTX *ctx);
 int ecdsa_signctx_init(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx);
-int ecdsa_custom_digest(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx);
 int ecdsa_signctx(EVP_PKEY_CTX *ctx, unsigned char *sig, size_t *siglen, EVP_MD_CTX *mctx);
-// int ecdsa_ctrl(EVP_PKEY_CTX *ctx, int type, int p1, void *p2);
+int ecdsa_verifyctx_init(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx);
+int ecdsa_verifyctx(EVP_PKEY_CTX *ctx, const unsigned char *sig, int siglen, EVP_MD_CTX *mctx);
+int ecdsa_custom_digest(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx);
+int ecdsa_ctrl(EVP_PKEY_CTX *ctx, int type, int p1, void *p2);
 
 // // init
 // int ecdsa_init(EVP_PKEY_CTX *ctx);

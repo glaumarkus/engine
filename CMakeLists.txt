@@ -40,7 +40,7 @@ set(ENGINE_IMPL_SRCS
   engine_link_digests.cpp 
   engine_link_sym_ciphers.cpp 
   engine_link_pkey.cpp
-  engine_link_ecdsa_copy.cpp
+  engine_link_ecdsa.cpp
 )
 
 add_library(${ENGINE_IMPL_NAME} SHARED ${ENGINE_IMPL_SRCS})

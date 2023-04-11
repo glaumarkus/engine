@@ -49,8 +49,6 @@ target_link_libraries(${ENGINE_IMPL_NAME} PRIVATE ${OPENSSL_CRYPTO_LIBRARY} ${OP
 target_compile_options(${ENGINE_IMPL_NAME} PUBLIC -Wunused-parameter)
 
 
-
-
 # Create a shared library for your engine
 add_library(${ENGINE_NAME} SHARED ${ENGINE_SRCS})
 
@@ -65,13 +63,13 @@ target_include_directories(${ENGINE_NAME} PRIVATE ${OPENSSL_INCLUDE_DIR})
 target_link_libraries(${ENGINE_NAME} PRIVATE ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY} ${ENGINE_IMPL_NAME})
 
 
-set(CURL_LIBRARY "/home/glaum/curl/curl-7.68.0/lib/.libs/libcurl.so")
-set(CURL_INCLUDE "/home/glaum/curl/curl-7.68.0/include")
-message("CURL_INCLUDE_DIRS: ${CURL_INCLUDE}")
+# set(CURL_LIBRARY "/home/glaum/curl/curl-7.68.0/lib/.libs/libcurl.so")
+# set(CURL_INCLUDE "/home/glaum/curl/curl-7.68.0/include")
+# message("CURL_INCLUDE_DIRS: ${CURL_INCLUDE}")
 
-add_executable(${TEST_NAME} curl_example.cpp)
-target_link_libraries(${TEST_NAME} ${CURL_LIBRARY} ${ENGINE_NAME} ${ENGINE_IMPL_NAME} ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY})
-target_include_directories(${TEST_NAME} PRIVATE ${CURL_INCLUDE} ${OPENSSL_INCLUDE_DIR})
+# add_executable(${TEST_NAME} curl_example.cpp)
+# target_link_libraries(${TEST_NAME} ${CURL_LIBRARY} ${ENGINE_NAME} ${ENGINE_IMPL_NAME} ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY})
+# target_include_directories(${TEST_NAME} PRIVATE ${CURL_INCLUDE} ${OPENSSL_INCLUDE_DIR})
 
 include(FetchContent)
 FetchContent_Declare(

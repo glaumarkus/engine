@@ -68,9 +68,20 @@ static EVP_PKEY *engine_load_private_key(ENGINE *engine, const char *key_id,
 
 
 /* pkey mapping */
-// static inline int engine_ecdsa_init(EVP_PKEY_CTX *ctx);
-// static inline int engine_ecdsa_digest_sign(EVP_MD_CTX *ctx, unsigned char *sig, size_t *siglen, const unsigned char *tbs, size_t tbslen);
-// static inline void engine_ecdsa_cleanup(EVP_PKEY_CTX *ctx);
+static inline int engine_signctx_init(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx);
+static inline int engine_signctx(EVP_PKEY_CTX *ctx, unsigned char *sig, size_t *siglen, EVP_MD_CTX *mctx);
+
+static inline int engine_verifyctx_init(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx);
+static inline int engine_verifyctx(EVP_PKEY_CTX *ctx, const unsigned char *sig, int siglen, EVP_MD_CTX *mctx);
+
+static inline int engine_ecdsa_digest_custom(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx);
+
+static inline int engine_ecdsa_ctrl(EVP_PKEY_CTX *ctx, int type, int p1, void *p2);
+static inline int engine_ecdsa_ctrl_str(EVP_PKEY_CTX *ctx, const char *type, const char *value);
+
+static inline int engine_ecdsa_init(EVP_PKEY_CTX *ctx);
+static inline void engine_ecdsa_cleanup(EVP_PKEY_CTX *ctx);
+
 static EVP_PKEY_METHOD* init_ecdsa_method();
 
 

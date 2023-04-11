@@ -36,7 +36,7 @@ static int engine_pkey_selector(ENGINE *e, EVP_PKEY_METHOD **method,
 
     switch (nid)
     {
-        // this comes out when calling with the key & sha256
+        // this comes out when calling with EC_KEY
         case NID_X9_62_id_ecPublicKey:
             *method = init_ecdsa_method();
             break;
@@ -132,12 +132,15 @@ static EVP_PKEY_METHOD* init_ecdsa_method(){
         EVP_PKEY_meth_set_ctrl(engine_ecdsa_method, engine_ecdsa_ctrl, engine_ecdsa_ctrl_str);
         EVP_PKEY_meth_set_digest_custom(engine_ecdsa_method, engine_ecdsa_digest_custom);
         EVP_PKEY_meth_set_signctx(engine_ecdsa_method, engine_signctx_init, engine_signctx);
-        EVP_PKEY_meth_set_verifyctx(engine_ecdsa_method, )
+        EVP_PKEY_meth_set_verifyctx(engine_ecdsa_method, engine_verifyctx_init, engine_verifyctx);
     }
     return engine_ecdsa_method;
 };
 
-
+static inline const EC_KEY_METHOD* engine_ec_key_method()
+{
+    return NULL;
+}
 /*
 * This gets called when the engine is bound from another program
 */
@@ -153,6 +156,8 @@ int engine_bind(ENGINE * e, const char *id)
         !ENGINE_set_ciphers(e, &engine_cipher_selector) ||
         !ENGINE_set_load_privkey_function(e, &engine_load_private_key) ||
         !ENGINE_set_pkey_meths(e, &engine_pkey_selector) 
+        // ||
+        // !ENGINE_set_EC(e, &engine_ec_key_method)
         // !ENGINE_set_ctrl_function(e, engine_ctrl_cmd_string) ||
         // !ENGINE_set_load_ssl_client_cert_function(e, &engine_load_certificate) ||
         // !ENGINE_set_EC(e, ecdsa_method) ||

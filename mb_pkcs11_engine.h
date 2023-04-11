@@ -57,8 +57,10 @@ static inline int engine_chacha20_do_cipher(EVP_CIPHER_CTX * ctx, unsigned char 
 static inline int engine_chacha20_cleanup(EVP_CIPHER_CTX *ctx);
 static const EVP_CIPHER* init_engine_chacha20_method(void);
 
-/* Loaders */
+/* Asym Key Loaders */
 static EVP_PKEY *engine_load_private_key(ENGINE *engine, const char *key_id,
+                              UI_METHOD *ui_method, void *callback_data);
+static EVP_PKEY *engine_load_public_key(ENGINE *engine, const char *key_id,
                               UI_METHOD *ui_method, void *callback_data);
 
                               

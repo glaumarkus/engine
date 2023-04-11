@@ -39,6 +39,8 @@ size_t chacha20_size();
 
 /* private key loader */
 EVP_PKEY* load_ec_key(const char* keyfile);
+/* public key loader */
+EVP_PKEY* load_ec_key_public(const char* keyfile);
 
 /* ecdsa mapping */
 int ecdsa_init(EVP_PKEY_CTX *ctx);

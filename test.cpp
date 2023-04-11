@@ -361,7 +361,38 @@ TEST(Test, LoadPrivateKey)
     EXPECT_TRUE(ret);
 }
 
-TEST(Test, Hm)
+TEST(Test, LoadPublicKey)
+{
+    ASSERT_NE(engine, nullptr);
+    EVP_PKEY* pkey_sw = nullptr;
+    EC_KEY* eckey = nullptr;
+    int ret = 0; 
+    std::string path_to_key = "/home/glaum/engine/keys/public_key.pem";
+    
+    // Load private key with sw
+    FILE* fp = fopen(path_to_key.c_str(), "r");
+    pkey_sw = EVP_PKEY_new();
+    eckey = EC_KEY_new_by_curve_name(NID_brainpoolP384r1);
+    PEM_read_EC_PUBKEY(fp, &eckey, nullptr, nullptr);
+    ret = EVP_PKEY_set1_EC_KEY(pkey_sw, eckey);
+    EC_KEY_free(eckey);
+    EXPECT_NE(EVP_PKEY_id(pkey_sw), EVP_PKEY_NONE);
+
+    // Load private key with engine
+    EVP_PKEY* pkey_engine = nullptr;
+    pkey_engine = ENGINE_load_public_key(engine, path_to_key.c_str(), nullptr, nullptr);
+    EXPECT_NE(pkey_engine, nullptr);
+
+    // compare the keys
+    ret = EVP_PKEY_cmp(pkey_sw, pkey_engine);
+    EXPECT_TRUE(ret);
+
+    // compare the key params
+    ret = EVP_PKEY_cmp_parameters(pkey_sw, pkey_engine);
+    EXPECT_TRUE(ret);
+}
+
+TEST(Test, ECDSA)
 {
     ASSERT_NE(engine, nullptr);
 
@@ -370,6 +401,7 @@ TEST(Test, Hm)
     EC_KEY* eckey = nullptr;
     int ret = 0; 
     std::string path_to_key = "/home/glaum/engine/keys/private_key.pem";
+    std::string path_to_pubkey = "/home/glaum/engine/keys/public_key.pem";
     size_t siglen = 0;
     std::vector<uint8_t> signature;
     std::vector<uint8_t> signature_engine;
@@ -399,7 +431,6 @@ TEST(Test, Hm)
     // resize signature
     signature.resize(siglen);
     EVP_DigestSignFinal(mdctx, (unsigned char*)signature.data(), &siglen);
-    std::cout << "DigestSW: " << base64_encode(signature) << std::endl;
     EVP_MD_CTX_free(mdctx);
 
     // Do verify sw sign
@@ -423,20 +454,15 @@ TEST(Test, Hm)
 
     // sign with engine
     mdctx = EVP_MD_CTX_new();
-    std::cout << "\n";
     ret = EVP_DigestSignInit(mdctx, nullptr, EVP_sha256(), engine, pkey_engine);
-    std::cout << "\n";
     EXPECT_EQ(ret, 1);
     ret = EVP_DigestSignUpdate(mdctx, (unsigned char*)msg.data(), msg.size());
     EXPECT_EQ(ret, 1);
-    std::cout << "\n";
-    // ret = EVP_DigestSignFinal(mdctx, nullptr, &siglen);
     signature_engine.resize(EVP_PKEY_size(pkey_engine));    
     ret = EVP_DigestSignFinal(mdctx, (unsigned char*)signature_engine.data(), &siglen);
     signature_engine.resize(siglen);
     EVP_MD_CTX_free(mdctx);
-    std::cout << "DigestEngine: " << base64_encode(signature_engine) << std::endl;
-
+ 
     // Do verify engine sign
     mdctx = EVP_MD_CTX_new();
     ret = EVP_DigestVerifyInit(mdctx, nullptr, EVP_sha256(), NULL, pkey_sw);
@@ -449,13 +475,81 @@ TEST(Test, Hm)
 
     // Do verify of engine sign with engine
     mdctx = EVP_MD_CTX_new();
-    ret = EVP_DigestVerifyInit(mdctx, nullptr, EVP_sha256(), engine, pkey_sw);
+    ret = EVP_DigestVerifyInit(mdctx, nullptr, EVP_sha256(), engine, pkey_engine);
     EXPECT_EQ(ret, 1);
     ret = EVP_DigestVerifyUpdate(mdctx, (unsigned char*)msg.data(), msg.size());
     EXPECT_EQ(ret, 1);
     ret = EVP_DigestVerifyFinal(mdctx, (unsigned char*)signature_engine.data(), siglen);
     EXPECT_EQ(ret, 1);
     EVP_MD_CTX_free(mdctx);
-    
+
+    // Do verify of sw sign with engine
+    mdctx = EVP_MD_CTX_new();
+    ret = EVP_DigestVerifyInit(mdctx, nullptr, EVP_sha256(), engine, pkey_engine);
+    EXPECT_EQ(ret, 1);
+    ret = EVP_DigestVerifyUpdate(mdctx, (unsigned char*)msg.data(), msg.size());
+    EXPECT_EQ(ret, 1);
+    ret = EVP_DigestVerifyFinal(mdctx, (unsigned char*)signature.data(), signature.size());
+    EXPECT_EQ(ret, 1);
+    EVP_MD_CTX_free(mdctx);  
+
+    // load public key with engine
+    EVP_PKEY* pubkey_engine = nullptr;
+    pubkey_engine = ENGINE_load_public_key(engine, path_to_pubkey.c_str(), nullptr, nullptr);
+    EXPECT_NE(pkey_engine, nullptr);
+
+    // Check if type matches
+    type = EVP_PKEY_base_id(pkey_engine);
+    EXPECT_EQ(type, EVP_PKEY_EC);
+
+    // Do verify of sw sign with public key
+    mdctx = EVP_MD_CTX_new();
+    ret = EVP_DigestVerifyInit(mdctx, nullptr, EVP_sha256(), engine, pubkey_engine);
+    EXPECT_EQ(ret, 1);
+    ret = EVP_DigestVerifyUpdate(mdctx, (unsigned char*)msg.data(), msg.size());
+    EXPECT_EQ(ret, 1);
+    ret = EVP_DigestVerifyFinal(mdctx, (unsigned char*)signature.data(), signature.size());
+    EXPECT_EQ(ret, 1);
+    EVP_MD_CTX_free(mdctx); 
+
 }
 
+TEST(Test, ECDH)
+{
+    std::string path_to_alice_key = "/home/glaum/engine/keys/alice_pkey.pem";
+    std::string path_to_bob_key = "/home/glaum/engine/keys/bob_pkey.pem";
+    EC_KEY* alice_pkey;
+    EC_KEY* bob_pkey;
+    int ret;
+    FILE* fp;
+
+    // Load alice private key with sw
+    fp = fopen(path_to_alice_key.c_str(), "r");
+    alice_pkey = EC_KEY_new_by_curve_name(NID_brainpoolP384r1);
+    PEM_read_ECPrivateKey(fp, &alice_pkey, nullptr, nullptr);
+    
+    // Load bob private key with sw
+    fp = fopen(path_to_bob_key.c_str(), "r");
+    bob_pkey = EC_KEY_new_by_curve_name(NID_brainpoolP384r1);
+    PEM_read_ECPrivateKey(fp, &bob_pkey, nullptr, nullptr);
+
+    // Alice computes shared secret
+    unsigned char* alice_shared_secret = nullptr;
+    int alice_shared_secret_len = ECDH_compute_key(alice_shared_secret, 0, EC_KEY_get0_public_key(bob_pkey), alice_pkey, nullptr);
+
+    // Bob computes shared secret
+    unsigned char* bob_shared_secret = nullptr;
+    int bob_shared_secret_len = ECDH_compute_key(bob_shared_secret, 0, EC_KEY_get0_public_key(alice_pkey), bob_pkey, nullptr);
+
+    if (alice_shared_secret_len != bob_shared_secret_len || memcmp(alice_shared_secret, bob_shared_secret, alice_shared_secret_len) != 0) {
+        // error handling
+        FAIL();
+    }
+
+    // Clean up memory
+    EC_KEY_free(alice_pkey);
+    EC_KEY_free(bob_pkey);
+
+    // with engine
+    //ENGINE_set_default(engine, ENGINE_METHOD_ECDH);
+}

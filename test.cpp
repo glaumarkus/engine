@@ -514,7 +514,7 @@ TEST(Test, ECDSA)
 
 }
 
-TEST(Test, ECDH)
+TEST(Test, ECDHNotWorking)
 {
     std::string path_to_alice_key = "/home/glaum/engine/keys/alice_pkey.pem";
     std::string path_to_bob_key = "/home/glaum/engine/keys/bob_pkey.pem";
@@ -541,7 +541,9 @@ TEST(Test, ECDH)
     unsigned char* bob_shared_secret = nullptr;
     int bob_shared_secret_len = ECDH_compute_key(bob_shared_secret, 0, EC_KEY_get0_public_key(alice_pkey), bob_pkey, nullptr);
 
-    if (alice_shared_secret_len != bob_shared_secret_len || memcmp(alice_shared_secret, bob_shared_secret, alice_shared_secret_len) != 0) {
+    if (alice_shared_secret_len != bob_shared_secret_len || 
+    memcmp(alice_shared_secret, bob_shared_secret, alice_shared_secret_len) != 0
+    ) {
         // error handling
         FAIL();
     }
@@ -550,6 +552,171 @@ TEST(Test, ECDH)
     EC_KEY_free(alice_pkey);
     EC_KEY_free(bob_pkey);
 
-    // with engine
-    //ENGINE_set_default(engine, ENGINE_METHOD_ECDH);
+}
+
+TEST(Test, ECDHProcess)
+{
+    EC_KEY* alice_pkey;
+    EC_KEY* alice_pubkey;
+    EC_KEY* bob_pkey;
+    EC_KEY* bob_pubkey;
+    int ret;
+    FILE* fp;
+    std::string path_to_alice_key = "/home/glaum/engine/keys/alice_pkey.pem";
+    std::string path_to_bob_key = "/home/glaum/engine/keys/bob_pkey.pem";
+    std::string path_to_alice_pubkey = "/home/glaum/engine/keys/alice_pubkey.pem";
+    std::string path_to_bob_pubkey = "/home/glaum/engine/keys/bob_pubkey.pem";
+    size_t shared_secret_len = 32;
+
+    // Load alice private key with sw
+    fp = fopen(path_to_alice_key.c_str(), "r");
+    alice_pkey = EC_KEY_new_by_curve_name(NID_brainpoolP384r1);
+    PEM_read_ECPrivateKey(fp, &alice_pkey, nullptr, nullptr);
+
+    // Load bob private key with sw
+    fp = fopen(path_to_bob_key.c_str(), "r");
+    bob_pkey = EC_KEY_new_by_curve_name(NID_brainpoolP384r1);
+    PEM_read_ECPrivateKey(fp, &bob_pkey, nullptr, nullptr);
+
+    // Load alice public key with sw
+    fp = fopen(path_to_alice_pubkey.c_str(), "r");
+    alice_pubkey = EC_KEY_new_by_curve_name(NID_brainpoolP384r1);
+    PEM_read_EC_PUBKEY(fp, &alice_pubkey, nullptr, nullptr);
+
+    // Load bob public key with sw
+    fp = fopen(path_to_bob_pubkey.c_str(), "r");
+    bob_pubkey = EC_KEY_new_by_curve_name(NID_brainpoolP384r1);
+    PEM_read_EC_PUBKEY(fp, &bob_pubkey, nullptr, nullptr);
+
+    // check keys
+    EXPECT_EQ(1, EC_KEY_check_key(alice_pkey));
+    EXPECT_EQ(1, EC_KEY_check_key(alice_pubkey));
+    EXPECT_EQ(1, EC_KEY_check_key(bob_pkey));
+    EXPECT_EQ(1, EC_KEY_check_key(bob_pubkey));
+
+    // pass key to EVP_PKEY
+    EVP_PKEY* alice_pevp = EVP_PKEY_new();
+    ret = EVP_PKEY_set1_EC_KEY(alice_pevp, alice_pkey);
+    EXPECT_EQ(ret, 1);
+
+    EVP_PKEY* bob_pevp = EVP_PKEY_new();
+    ret = EVP_PKEY_set1_EC_KEY(bob_pevp, bob_pkey);
+    EXPECT_EQ(ret, 1);
+
+    EVP_PKEY* alice_pubevp = EVP_PKEY_new();
+    ret = EVP_PKEY_set1_EC_KEY(alice_pubevp, alice_pubkey);
+    EXPECT_EQ(ret, 1);
+    
+    EVP_PKEY* bob_pubevp = EVP_PKEY_new();
+    ret = EVP_PKEY_set1_EC_KEY(bob_pubevp, bob_pubkey);
+    EXPECT_EQ(ret, 1);
+
+
+    // create ctx
+    EVP_PKEY_CTX *ctx1 = EVP_PKEY_CTX_new(alice_pevp, nullptr);
+
+    // derive init
+    ret = EVP_PKEY_derive_init(ctx1);
+    EXPECT_EQ(ret, 1);
+
+    // set peer
+    ret = EVP_PKEY_derive_set_peer(ctx1, bob_pubevp);
+    EXPECT_EQ(ret, 1);
+
+    // derive 
+    unsigned char shared_secret2[shared_secret_len];
+    ret = EVP_PKEY_derive(ctx1, shared_secret2, &shared_secret_len);
+    EXPECT_EQ(ret, 1);
+
+    // cleanup
+    EVP_PKEY_CTX_free(ctx1);
+
+    // create ctx
+    EVP_PKEY_CTX *ctx2 = EVP_PKEY_CTX_new(bob_pevp, nullptr);
+
+    // derive init
+    ret = EVP_PKEY_derive_init(ctx2);
+    EXPECT_EQ(ret, 1);
+
+    // set peer
+    ret = EVP_PKEY_derive_set_peer(ctx2, alice_pubevp);
+    EXPECT_EQ(ret, 1);
+
+    // derive 
+    unsigned char shared_secret1[shared_secret_len];
+    ret = EVP_PKEY_derive(ctx1, shared_secret1, &shared_secret_len);
+    EXPECT_EQ(ret, 1);
+
+    // cleanup
+    EVP_PKEY_CTX_free(ctx2);
+    
+    // compare derived secrets
+    EXPECT_EQ(memcmp(shared_secret1, shared_secret2, shared_secret_len), 0);
+
+    // Test cleanup
+    EVP_PKEY_free(alice_pevp);
+    EVP_PKEY_free(alice_pubevp);
+    EVP_PKEY_free(bob_pevp);
+    EVP_PKEY_free(bob_pubevp);
+    EC_KEY_free(alice_pkey);
+    EC_KEY_free(alice_pubkey);
+    EC_KEY_free(bob_pkey);
+    EC_KEY_free(bob_pubkey);
+}
+
+
+TEST(Test, ECDHEngine)
+{
+    int ret = 0;
+    std::string path_to_alice_key = "/home/glaum/engine/keys/alice_pkey.pem";
+    std::string path_to_bob_key = "/home/glaum/engine/keys/bob_pkey.pem";
+    std::string path_to_alice_pubkey = "/home/glaum/engine/keys/alice_pubkey.pem";
+    std::string path_to_bob_pubkey = "/home/glaum/engine/keys/bob_pubkey.pem";
+
+    // load alice key
+    EVP_PKEY* alice_pkey_engine = nullptr;
+    alice_pkey_engine = ENGINE_load_private_key(engine, path_to_alice_key.c_str(), nullptr, nullptr);
+    EXPECT_NE(alice_pkey_engine, nullptr);
+
+    // load bob key
+    EVP_PKEY* bob_pkey_engine = nullptr;
+    bob_pkey_engine = ENGINE_load_private_key(engine, path_to_bob_key.c_str(), nullptr, nullptr);
+    EXPECT_NE(bob_pkey_engine, nullptr);
+
+    // load alice public key
+    EVP_PKEY* alice_pubkey_engine = nullptr;
+    alice_pubkey_engine = ENGINE_load_public_key(engine,path_to_alice_pubkey.c_str(), nullptr, nullptr);
+    EXPECT_NE(alice_pubkey_engine, nullptr);
+
+    // load bob public key
+    EVP_PKEY* bob_pubkey_engine = nullptr;
+    bob_pubkey_engine = ENGINE_load_public_key(engine,path_to_bob_pubkey.c_str(), nullptr, nullptr);
+    EXPECT_NE(bob_pubkey_engine, nullptr);
+
+    // create ctx
+    EVP_PKEY_CTX *ctx1 = EVP_PKEY_CTX_new(alice_pkey_engine, engine);
+    EVP_PKEY_CTX *ctx2 = EVP_PKEY_CTX_new(bob_pkey_engine, engine);
+    
+    // set up shared secret
+    size_t shared_secret_len = 32;
+    unsigned char shared_secret1[shared_secret_len];
+    unsigned char shared_secret2[shared_secret_len];
+
+    // derive alice
+    std::cout << "\nCalling derive init\n";
+    ret = EVP_PKEY_derive_init(ctx1);
+    EXPECT_EQ(ret, 1);
+    std::cout << "\nCalling derive set peer\n";
+    printf("Memloc of bobs key: %p\n", bob_pubkey_engine);
+    ret = EVP_PKEY_derive_set_peer(ctx1, bob_pubkey_engine);
+    EXPECT_EQ(ret, 1);
+    std::cout << "\nCalling derive\n";
+    ret = EVP_PKEY_derive(ctx1, shared_secret1, &shared_secret_len);
+    EXPECT_EQ(ret, 1);
+
+    // derive bob
+
+    // derive bob
+
+    //EVP_PKEY_derive_init()
 }

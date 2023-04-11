@@ -52,6 +52,13 @@ int ecdsa_verifyctx(EVP_PKEY_CTX *ctx, const unsigned char *sig, int siglen, EVP
 int ecdsa_custom_digest(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx);
 int ecdsa_ctrl(EVP_PKEY_CTX *ctx, int type, int p1, void *p2);
 
+/* ecdh mapping */
+int ecdh_derive_init(EVP_PKEY_CTX *ctx);
+int ecdh_derive(EVP_PKEY_CTX *ctx, unsigned char *key, size_t *keylen);
+int ecdh_set_peer(EC_KEY* other_key);
+int ecdh_get_shared_secret();
+
+
 // // init
 // int ecdsa_init(EVP_PKEY_CTX *ctx);
 

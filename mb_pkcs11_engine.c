@@ -5,7 +5,7 @@
 #include "engine_link.h"
 
 // defines
-// #define PRINT_DEBUG
+#define PRINT_DEBUG
 
 static const char *mb_engine_id = "MB_PKCS11_ENGINE";
 static const char *mb_engine_name = "MB.OS custom PKCS11 Engine";
@@ -20,6 +20,137 @@ RAND_METHOD engine_random_method = {
 };
 
 
+
+static inline const EC_KEY_METHOD* engine_ec_key_method()
+{
+    return NULL;
+}
+/*
+* This gets called when the engine is bound from another program
+*/
+int engine_bind(ENGINE * e, const char *id)
+{
+#ifdef PRINT_DEBUG
+    printf("[Engine]: engine_bind called\n");
+#endif
+    if (!ENGINE_set_id(e, mb_engine_id) ||
+        !ENGINE_set_name(e, mb_engine_name) ||
+        !ENGINE_set_init_function(e, engine_init) ||
+        !ENGINE_set_finish_function(e, engine_finish) ||
+        !ENGINE_set_RAND(e, &engine_random_method) ||
+        !ENGINE_set_digests(e, &engine_digest_selector) ||
+        !ENGINE_set_ciphers(e, &engine_cipher_selector) ||
+        !ENGINE_set_load_privkey_function(e, &engine_load_private_key) ||
+        !ENGINE_set_load_pubkey_function(e, &engine_load_public_key) || 
+        !ENGINE_set_pkey_meths(e, &engine_pkey_selector) 
+        // ||
+        // !ENGINE_set_EC(e, &engine_ec_key_method)
+        // !ENGINE_set_ctrl_function(e, engine_ctrl_cmd_string) ||
+        // !ENGINE_set_load_ssl_client_cert_function(e, &engine_load_certificate) ||
+        // !ENGINE_set_EC(e, ecdsa_method) ||
+        // !ENGINE_set_DSA(e, dsa_method)
+        )
+        return 0;
+    // now bind the ec stuff??
+    //ECDH_METHOD *ecdh_method = ECDH_METHOD_new(EC_KEY_OpenSSL());
+
+    return 1;
+}
+
+
+IMPLEMENT_DYNAMIC_BIND_FN(engine_bind)
+IMPLEMENT_DYNAMIC_CHECK_FN()
+
+
+/* private key loader */
+static EVP_PKEY *engine_load_private_key(ENGINE *engine, const char *key_id,
+                              UI_METHOD *ui_method, void *callback_data) {
+#ifdef PRINT_DEBUG
+    printf("[Engine]: engine_load_private_key called!\n");
+#endif
+    return load_ec_key(key_id);
+}
+
+/* public key loader */
+static EVP_PKEY *engine_load_public_key(ENGINE *engine, const char *key_id,
+                              UI_METHOD *ui_method, void *callback_data) {
+#ifdef PRINT_DEBUG
+    printf("[Engine]: engine_load_public_key called!\n");
+#endif
+    return load_ec_key_public(key_id);
+}
+
+
+
+/* digest selector */ 
+static int digest_ids[] = {NID_sha256, NID_sha3_384};
+static int engine_digest_selector(ENGINE *e, const EVP_MD **digest,
+        const int **nids, int nid) {
+#ifdef PRINT_DEBUG
+    printf("[Engine]: engine_digest_selector called!\n");
+#endif
+    int ok = 1;
+
+    if (!digest) {
+        *nids = digest_ids;
+#ifdef PRINT_DEBUG
+        printf("[Engine]: \n Digest is empty! Nid:%d\n", nid);
+#endif
+        return 2;
+    }
+
+    switch (nid)
+    {
+        case NID_sha256:
+            *digest = init_engine_sha256_method();
+            break;
+        case NID_sha3_384:
+            *digest = init_engine_sha384_method();
+            break;
+        default:
+            *digest = NULL;
+            ok = 0;
+    }
+
+    return ok;
+}
+
+
+/* cipher selector */ 
+static int cipher_ids[] = {NID_aes_256_cbc, NID_chacha20};
+static int engine_cipher_selector(ENGINE *e, const EVP_CIPHER **cipher, const int **nids, int nid)
+{
+#ifdef PRINT_DEBUG
+    printf("[Engine]: engine_cipher_selector called!\n");
+#endif
+    int ok = 1;
+
+    if (!cipher)
+    {
+        *nids = cipher_ids;
+#ifdef PRINT_DEBUG
+        printf("[Engine]: \n Cipher is empty! Nid:%d\n", nid);
+#endif
+        return 2;
+    }
+    
+    switch (nid)
+    {
+        case NID_aes_256_cbc:
+            *cipher = init_engine_aes256_cbc_method();
+            break;
+        case NID_chacha20:
+            *cipher = init_engine_chacha20_method();
+            break;
+        default:
+            *cipher = NULL;
+            ok = 0;
+    }
+    return ok;
+}
+
+
+/* pkey method selector */
 static int pkey_methods_ids[] = {NID_X9_62_id_ecPublicKey};
 static int engine_pkey_selector(ENGINE *e, EVP_PKEY_METHOD **method,
         const int **nids, int nid) {
@@ -30,7 +161,9 @@ static int engine_pkey_selector(ENGINE *e, EVP_PKEY_METHOD **method,
 
     if (!method) {
         *nids = pkey_methods_ids;
+#ifdef PRINT_DEBUG
         printf("[Engine]: \n Method is empty! Nid:%d\n", nid);
+#endif
         return 2;
     }
 
@@ -48,6 +181,45 @@ static int engine_pkey_selector(ENGINE *e, EVP_PKEY_METHOD **method,
     return ok;
 }
 
+
+static inline int engine_ecdsa_derive_init(EVP_PKEY_CTX *ctx)
+{
+#ifdef PRINT_DEBUG
+    printf("[Engine]: engine_ecdsa_derive_init called!\n");
+#endif
+    return ecdh_derive_init(ctx);
+}
+static inline int engine_ecdsa_derive(EVP_PKEY_CTX *ctx, unsigned char *key, size_t *keylen)
+{
+#ifdef PRINT_DEBUG
+    printf("[Engine]: engine_ecdsa_derive called!\n");
+#endif
+    return ecdh_derive(ctx, key, keylen);
+}
+
+/* pkey method */
+static EVP_PKEY_METHOD* engine_ecdsa_method = NULL;
+static EVP_PKEY_METHOD* init_ecdsa_method(){
+#ifdef PRINT_DEBUG
+    printf("[Engine]: init_ecdsa_method called!\n");
+#endif
+    if (engine_ecdsa_method == NULL)
+    {
+        engine_ecdsa_method = EVP_PKEY_meth_new(NID_brainpoolP384r1, EVP_PKEY_FLAG_AUTOARGLEN);
+        EVP_PKEY_meth_set_init(engine_ecdsa_method, engine_ecdsa_init);
+        EVP_PKEY_meth_set_cleanup(engine_ecdsa_method, engine_ecdsa_cleanup); 
+        EVP_PKEY_meth_set_ctrl(engine_ecdsa_method, engine_ecdsa_ctrl, engine_ecdsa_ctrl_str);
+        // ecdsa
+        EVP_PKEY_meth_set_digest_custom(engine_ecdsa_method, engine_ecdsa_digest_custom);
+        EVP_PKEY_meth_set_signctx(engine_ecdsa_method, engine_signctx_init, engine_signctx);
+        EVP_PKEY_meth_set_verifyctx(engine_ecdsa_method, engine_verifyctx_init, engine_verifyctx);
+
+        // dont know
+        EVP_PKEY_meth_set_derive(engine_ecdsa_method, engine_ecdsa_derive_init, engine_ecdsa_derive);
+
+    }
+    return engine_ecdsa_method;
+};
 
 static inline int engine_ecdsa_init(EVP_PKEY_CTX *ctx)
 {
@@ -119,155 +291,7 @@ static inline int engine_verifyctx(EVP_PKEY_CTX *ctx, const unsigned char *sig, 
     return ecdsa_verifyctx(ctx, sig, siglen, mctx);
 }
 
-static EVP_PKEY_METHOD* engine_ecdsa_method = NULL;
-static EVP_PKEY_METHOD* init_ecdsa_method(){
-#ifdef PRINT_DEBUG
-    printf("[Engine]: init_ecdsa_method called!\n");
-#endif
-    if (engine_ecdsa_method == NULL)
-    {
-        engine_ecdsa_method = EVP_PKEY_meth_new(NID_brainpoolP384r1, EVP_PKEY_FLAG_AUTOARGLEN);
-        EVP_PKEY_meth_set_init(engine_ecdsa_method, engine_ecdsa_init);
-        EVP_PKEY_meth_set_cleanup(engine_ecdsa_method, engine_ecdsa_cleanup); 
-        EVP_PKEY_meth_set_ctrl(engine_ecdsa_method, engine_ecdsa_ctrl, engine_ecdsa_ctrl_str);
-        EVP_PKEY_meth_set_digest_custom(engine_ecdsa_method, engine_ecdsa_digest_custom);
-        EVP_PKEY_meth_set_signctx(engine_ecdsa_method, engine_signctx_init, engine_signctx);
-        EVP_PKEY_meth_set_verifyctx(engine_ecdsa_method, engine_verifyctx_init, engine_verifyctx);
-    }
-    return engine_ecdsa_method;
-};
 
-static inline const EC_KEY_METHOD* engine_ec_key_method()
-{
-    return NULL;
-}
-/*
-* This gets called when the engine is bound from another program
-*/
-int engine_bind(ENGINE * e, const char *id)
-{
-#ifdef PRINT_DEBUG
-    printf("[Engine]: engine_bind called\n");
-#endif
-    if (!ENGINE_set_id(e, mb_engine_id) ||
-        !ENGINE_set_name(e, mb_engine_name) ||
-        !ENGINE_set_init_function(e, engine_init) ||
-        !ENGINE_set_finish_function(e, engine_finish) ||
-        !ENGINE_set_RAND(e, &engine_random_method) ||
-        !ENGINE_set_digests(e, &engine_digest_selector) ||
-        !ENGINE_set_ciphers(e, &engine_cipher_selector) ||
-        !ENGINE_set_load_privkey_function(e, &engine_load_private_key) ||
-        !ENGINE_set_load_pubkey_function(e, &engine_load_public_key) || 
-        !ENGINE_set_pkey_meths(e, &engine_pkey_selector) 
-        // ||
-        // !ENGINE_set_EC(e, &engine_ec_key_method)
-        // !ENGINE_set_ctrl_function(e, engine_ctrl_cmd_string) ||
-        // !ENGINE_set_load_ssl_client_cert_function(e, &engine_load_certificate) ||
-        // !ENGINE_set_EC(e, ecdsa_method) ||
-        // !ENGINE_set_DSA(e, dsa_method)
-        )
-        return 0;
-    // now bind the ec stuff??
-    //ECDH_METHOD *ecdh_method = ECDH_METHOD_new(EC_KEY_OpenSSL());
-
-    return 1;
-}
-
-
-IMPLEMENT_DYNAMIC_BIND_FN(engine_bind)
-IMPLEMENT_DYNAMIC_CHECK_FN()
-
-
-/* digest selector */ 
-static int digest_ids[] = {NID_sha256, NID_sha3_384};
-static int engine_digest_selector(ENGINE *e, const EVP_MD **digest,
-        const int **nids, int nid) {
-#ifdef PRINT_DEBUG
-    printf("[Engine]: engine_digest_selector called!\n");
-#endif
-    int ok = 1;
-
-    if (!digest) {
-        *nids = digest_ids;
-#ifdef PRINT_DEBUG
-        printf("[Engine]: \n Digest is empty! Nid:%d\n", nid);
-#endif
-        return 2;
-    }
-
-    switch (nid)
-    {
-        case NID_sha256:
-            *digest = init_engine_sha256_method();
-            break;
-        case NID_sha3_384:
-            *digest = init_engine_sha384_method();
-            break;
-        default:
-            *digest = NULL;
-            ok = 0;
-    }
-
-    return ok;
-}
-
-/* cipher selector */ 
-static int cipher_ids[] = {NID_aes_256_cbc, NID_chacha20};
-static int engine_cipher_selector(ENGINE *e, const EVP_CIPHER **cipher, const int **nids, int nid)
-{
-#ifdef PRINT_DEBUG
-    printf("[Engine]: engine_cipher_selector called!\n");
-#endif
-    int ok = 1;
-
-    if (!cipher)
-    {
-        *nids = cipher_ids;
-#ifdef PRINT_DEBUG
-        printf("[Engine]: \n Cipher is empty! Nid:%d\n", nid);
-#endif
-        return 2;
-    }
-    
-    switch (nid)
-    {
-        case NID_aes_256_cbc:
-            *cipher = init_engine_aes256_cbc_method();
-            break;
-        case NID_chacha20:
-            *cipher = init_engine_chacha20_method();
-            break;
-        default:
-            *cipher = NULL;
-            ok = 0;
-    }
-    return ok;
-}
-
-
-static EVP_PKEY *engine_load_private_key(ENGINE *engine, const char *key_id,
-                              UI_METHOD *ui_method, void *callback_data) {
-#ifdef PRINT_DEBUG
-    printf("[Engine]: engine_load_private_key called!\n");
-#endif
-    return load_ec_key(key_id);
-}
-
-static EVP_PKEY *engine_load_public_key(ENGINE *engine, const char *key_id,
-                              UI_METHOD *ui_method, void *callback_data) {
-#ifdef PRINT_DEBUG
-    printf("[Engine]: engine_load_public_key called!\n");
-#endif
-    return load_ec_key_public(key_id);
-}
-
-
-
-
-
-/*
-* Method implementations
-*/
 
 /* sha256 method */
 static EVP_MD* engine_sha256_method = NULL;

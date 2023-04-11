@@ -160,17 +160,78 @@ int ecdsa_custom_digest(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx)
     return ok;
 }
 
+struct ecdh_data{
+    EVP_PKEY_CTX* ctx;
+    EC_KEY* key;
+    EC_KEY* other_key;
+};
+
+static ecdh_data* ecdh_ctx = nullptr;
 
 
 int ecdsa_ctrl(EVP_PKEY_CTX *ctx, int type, int p1, void *p2)
 {
+    printf("ecdsa_ctrl called\n");
+    printf("Params: \n");
+    printf("ctx: %p, type: %d, p1: %d, p2: %p\n", ctx, type, p1, p2);
     int ok = 1;
-    // printf("ecdsa_ctrl called\n");
-    // printf("Params: \n");
-    // printf("ctx: %p, type: %d, p1: %d, p2: %p\n", ctx, type, p1, p2);
+    switch (type)
+    {
+        case EVP_PKEY_CTRL_MD:
+            break;
+        case EVP_PKEY_CTRL_DIGESTINIT:
+            break;
+        case EVP_PKEY_CTRL_PEER_KEY:
+            
+            if (p2 == nullptr)
+            {
+                ok = 0;
+                break;
+            }
+
+            // cast to key
+            EVP_PKEY* peer_pub = (EVP_PKEY*)p2;
+
+            // check if it is an EC Pub key
+            if (EVP_PKEY_id(peer_pub) != EVP_PKEY_EC)
+            {
+                ok = 0;
+                break;
+            }
+            ok = EVP_PKEY_derive_set_peer(ecdh_ctx->ctx, peer_pub);
+            // EVP_PKEY_CTX_set_ecdh_kdf_md ??
+            break;
+
+    }
+
     
     return ok;
 }
 
 
+/* ecdh mapping */
+int ecdh_derive_init(EVP_PKEY_CTX *ctx)
+{
 
+    ecdh_ctx = new ecdh_data;
+    ecdh_ctx->ctx = EVP_PKEY_CTX_new(EVP_PKEY_CTX_get0_pkey(ctx), nullptr);
+    return 1;
+}
+
+int ecdh_derive(EVP_PKEY_CTX *ctx, unsigned char *key, size_t *keylen)
+{
+    return 1;
+}
+
+int ecdh_set_peer(EC_KEY* other_key)
+{
+    const unsigned char* key_mem = (const unsigned char*)other_key;
+    ecdh_ctx->other_key = d2i_EC_PUBKEY(NULL, &key_mem, 1);;
+    int ret = EC_KEY_check_key(ecdh_ctx->other_key);
+    return ret;
+}
+
+int ecdh_get_shared_secret()
+{
+    return 1;
+}

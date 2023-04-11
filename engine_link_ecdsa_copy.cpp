@@ -6,6 +6,8 @@ struct ecdsa_mapping
 {
     EC_KEY* ec_key;
     ECDSA_SIG* sig;
+    unsigned char hash[EVP_MAX_MD_SIZE];
+    unsigned int hash_size;
 };
 
 static ecdsa_mapping* ecdsa_ctx = nullptr;
@@ -80,15 +82,9 @@ int ecdsa_verifyctx(EVP_PKEY_CTX *ctx, const unsigned char *sig, int siglen, EVP
     int ok = 0;
     if (sig != nullptr)
     {
-
-        // // ah damn, its not deterministic.. thats not going to work
-        // unsigned char* sig_cpy = new unsigned char[EVP_PKEY_size(EVP_PKEY_CTX_get0_pkey(ctx))];
-        // int sig_len = i2d_ECDSA_SIG(ecdsa_ctx->sig, &sig_cpy);
-        // // check if size matches
-        // if (sig_len != siglen)
-        // {
-        //     return ok;
-        // }
+        // cast to ECDSA_SIG
+        ECDSA_SIG* sig_cast = d2i_ECDSA_SIG(nullptr, &sig, siglen);
+        ok = ECDSA_do_verify(ecdsa_ctx->hash, ecdsa_ctx->hash_size, sig_cast, ecdsa_ctx->ec_key);
     }
     return ok;
 }
@@ -97,9 +93,35 @@ int ecdsa_verifyctx(EVP_PKEY_CTX *ctx, const unsigned char *sig, int siglen, EVP
 
 int ecdsa_custom_digest_update(EVP_MD_CTX *ctx, const void *data, size_t count)
 {
-    unsigned char hash[SHA256_DIGEST_LENGTH];
-    SHA256((unsigned char*)data, count, hash);
-    ecdsa_ctx->sig = ECDSA_do_sign(hash, SHA256_DIGEST_LENGTH, ecdsa_ctx->ec_key);
+    int ret = 0;
+
+    // find the digest type
+    const EVP_MD* type = EVP_MD_CTX_md(ctx);
+
+    // get NID from type
+    int nid = EVP_MD_type(type);
+
+    // get alg from nid
+    const EVP_MD* sw_type = EVP_get_digestbynid(nid);
+
+    // create hash ctx
+    EVP_MD_CTX* mdctx = EVP_MD_CTX_new();
+
+    // init hash
+    ret = EVP_DigestInit_ex(mdctx, sw_type, NULL);
+
+    // update hash
+    ret = EVP_DigestUpdate(mdctx, data, count);
+
+    // finalize hash
+    ret = EVP_DigestFinal_ex(mdctx, ecdsa_ctx->hash, &ecdsa_ctx->hash_size);
+
+    // free
+    EVP_MD_CTX_free(mdctx);
+
+    // do ecdsa sign
+    ecdsa_ctx->sig = ECDSA_do_sign(ecdsa_ctx->hash, (int)ecdsa_ctx->hash_size, ecdsa_ctx->ec_key);
+
     return 1;
 }
 

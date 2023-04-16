@@ -699,6 +699,7 @@ TEST(Test, ECDHEngine)
     
     // set up shared secret
     size_t shared_secret_len = 32;
+    size_t engine_secret_len = 0;
     unsigned char shared_secret1[shared_secret_len];
     unsigned char shared_secret2[shared_secret_len];
 
@@ -711,7 +712,8 @@ TEST(Test, ECDHEngine)
     ret = EVP_PKEY_derive_set_peer(ctx1, bob_pubkey_engine);
     EXPECT_EQ(ret, 1);
     std::cout << "\nCalling derive\n";
-    ret = EVP_PKEY_derive(ctx1, shared_secret1, &shared_secret_len);
+    ret = EVP_PKEY_derive(ctx1, nullptr, &engine_secret_len);
+    ret = EVP_PKEY_derive(ctx1, shared_secret1, &engine_secret_len);
     EXPECT_EQ(ret, 1);
 
     // derive bob

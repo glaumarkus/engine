@@ -181,7 +181,12 @@ int ecdsa_ctrl(EVP_PKEY_CTX *ctx, int type, int p1, void *p2)
             break;
         case EVP_PKEY_CTRL_DIGESTINIT:
             break;
+        case EVP_PKEY_EC:
+            break;
+        case EVP_PKEY_OP_DERIVE:
+            break;
         case EVP_PKEY_CTRL_PEER_KEY:
+
             
             if (p2 == nullptr)
             {
@@ -189,16 +194,25 @@ int ecdsa_ctrl(EVP_PKEY_CTX *ctx, int type, int p1, void *p2)
                 break;
             }
 
-            // cast to key
-            EVP_PKEY* peer_pub = (EVP_PKEY*)p2;
-
-            // check if it is an EC Pub key
-            if (EVP_PKEY_id(peer_pub) != EVP_PKEY_EC)
+            if (p1 == 0)
             {
-                ok = 0;
-                break;
+                // cast to key
+                EVP_PKEY* peer_pub = (EVP_PKEY*)p2;
+
+                // check if it is an EC Pub key
+                if (EVP_PKEY_id(peer_pub) != EVP_PKEY_EC)
+                {
+                    ok = 0;
+                    break;
+                }
+                ok = EVP_PKEY_derive_init(ecdh_ctx->ctx);
+                ok = EVP_PKEY_derive_set_peer(ecdh_ctx->ctx, peer_pub);
+                
             }
-            ok = EVP_PKEY_derive_set_peer(ecdh_ctx->ctx, peer_pub);
+            else if (p1 == 1)
+            {
+                EVP_PKEY_CTX_set0_ecdh_kdf_ukm(ctx, nullptr, 32);
+            }
             // EVP_PKEY_CTX_set_ecdh_kdf_md ??
             break;
 
@@ -214,13 +228,25 @@ int ecdh_derive_init(EVP_PKEY_CTX *ctx)
 {
 
     ecdh_ctx = new ecdh_data;
-    ecdh_ctx->ctx = EVP_PKEY_CTX_new(EVP_PKEY_CTX_get0_pkey(ctx), nullptr);
+    // get key
+    EVP_PKEY* pkey = EVP_PKEY_CTX_get0_pkey(ctx);
+    ecdh_ctx->ctx = EVP_PKEY_CTX_new(pkey, nullptr);
+
+    // set outlen
+    EVP_PKEY_CTX_set_ecdh_kdf_outlen(ctx, 32);
+    
+    // EVP_PKEY_CTRL_EC_PARAMGEN_CURVE_NID(ctx, )
+    // EVP_PKEY_CTX_set_dh_kdf_outlen(ctx, 32);
+    EVP_PKEY_CTX_set_dh_kdf_outlen(ctx, 32);
+    // EVP_PKEY_CTX_set_dh_kdf_outlen
+    EVP_PKEY_CTX_set_ecdh_kdf_outlen(ctx, 32);
+    // EVP_PKEY_CTX_set0_ecdh_kdf_ukm(ctx, nullptr, 32);
     return 1;
 }
 
 int ecdh_derive(EVP_PKEY_CTX *ctx, unsigned char *key, size_t *keylen)
-{
-    return 1;
+{    
+    return EVP_PKEY_derive(ecdh_ctx->ctx, key, keylen);
 }
 
 int ecdh_set_peer(EC_KEY* other_key)

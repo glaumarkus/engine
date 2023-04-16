@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+# set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 
 # Set project
 project(OpenSSLEngine)
@@ -11,20 +11,22 @@ set(ENGINE_NAME mbengine)
 set(ENGINE_VERSION 1.0.0)
 
 # Set the source files for your engine
-set(ENGINE_SRCS 
-#  mb_pkcs11_engine_sha256.c  
-  mb_pkcs11_engine.c 
+set(ENGINE_SRCS  
+  engine/mb_pkcs11_engine.c 
 )
 
 # Set the name of the test
 set(TEST_NAME pkcs11test)
 
-# Set the include directories for OpenSSL
-# find_package(OpenSSL REQUIRED)
+message("Source directory: ${CMAKE_CURRENT_SOURCE_DIR}")
 
-set(OPENSSL_INCLUDE_DIR "/home/glaum/curl/openssl-1.1.1b/include")
-set(OPENSSL_CRYPTO_LIBRARY "/home/glaum/curl/openssl-1.1.1b/libcrypto.so.1.1")
-set(OPENSSL_SSL_LIBRARY "/home/glaum/curl/openssl-1.1.1b/libssl.so")
+set(OPENSSL_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/deps/openssl-1.1.1g/include")
+set(OPENSSL_CRYPTO_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/deps/openssl-1.1.1g/libcrypto.so.1.1")
+set(OPENSSL_SSL_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/deps/openssl-1.1.1g/libssl.so")
+
+# set(OPENSSL_CRYPTO_INCLUDE_DIR "/home/glaum/curl/openssl-1.1.1b/crypto")
+# set(OPENSSL_CRYPTO_LIBRARY "/home/glaum/curl/openssl-1.1.1b/libcrypto.so.1.1")
+# set(OPENSSL_SSL_LIBRARY "/home/glaum/curl/openssl-1.1.1b/libssl.so")
 
 message("OpenSSL_INCLUDE_DIRS: ${OPENSSL_INCLUDE_DIR}")
 message("OpenSSL_CRYPTO_LIB: ${OPENSSL_CRYPTO_LIBRARY}")
@@ -36,11 +38,13 @@ set(ENGINE_IMPL_NAME mbengineimpl)
 
 # Set the source files for your engine
 set(ENGINE_IMPL_SRCS 
-  engine_link.cpp 
-  engine_link_digests.cpp 
-  engine_link_sym_ciphers.cpp 
-  engine_link_pkey.cpp
-  engine_link_ecdsa.cpp
+  engine_impl/engine_link.cpp 
+  engine_impl/engine_link_digests.cpp 
+  engine_impl/engine_link_sym_ciphers.cpp 
+  engine_impl/engine_link_pkey.cpp
+  engine_impl/engine_link_ecdsa.cpp
+  engine_impl/engine_link_ec.cpp
+  engine_impl/engine_link_random.cpp
 )
 
 add_library(${ENGINE_IMPL_NAME} SHARED ${ENGINE_IMPL_SRCS})
@@ -59,7 +63,7 @@ target_compile_options(${ENGINE_NAME} PUBLIC -Wdeprecated-declarations -Wimplici
 set_target_properties(${ENGINE_NAME} PROPERTIES VERSION ${ENGINE_VERSION})
 
 # Link against OpenSSL
-target_include_directories(${ENGINE_NAME} PRIVATE ${OPENSSL_INCLUDE_DIR})
+target_include_directories(${ENGINE_NAME} PRIVATE ${OPENSSL_INCLUDE_DIR} ${OPENSSL_CRYPTO_INCLUDE_DIR} engine_impl)
 target_link_libraries(${ENGINE_NAME} PRIVATE ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY} ${ENGINE_IMPL_NAME})
 
 

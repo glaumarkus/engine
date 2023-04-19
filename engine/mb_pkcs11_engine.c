@@ -152,6 +152,14 @@ static void finish_ec_key_method() {
   EC_KEY_METHOD_free(engine_ec_key_method);
 }
 
+static int engine_ctrl_cmd_string(ENGINE *e, int cmd, long i, void *p,
+                                  void (*f)(void)) {
+#ifdef PRINT_DEBUG
+  printf("[Engine]: engine_ctrl_cmd_string called\n");
+#endif
+  return ctrl_cmd_string(e, cmd, i, p, f);
+}
+
 int engine_bind(ENGINE *e, const char *id) {
   int ok = 1;
 #ifdef PRINT_DEBUG
@@ -165,11 +173,11 @@ int engine_bind(ENGINE *e, const char *id) {
       !ENGINE_set_ciphers(e, &engine_cipher_selector) ||
       !ENGINE_set_load_privkey_function(e, &engine_load_private_key) ||
       !ENGINE_set_load_pubkey_function(e, &engine_load_public_key) ||
-      !ENGINE_set_pkey_meths(e, &engine_pkey_selector) ||
-      !ENGINE_set_EC(e, engine_ec_key_method)
-      // !ENGINE_set_ctrl_function(e, engine_ctrl_cmd_string) ||
-      // !ENGINE_set_load_ssl_client_cert_function(e, &engine_load_certificate)
-  ) {
+      // !ENGINE_set_pkey_meths(e, &engine_pkey_selector) ||
+      !ENGINE_set_EC(e, engine_ec_key_method) ||
+      //! ENGINE_set_load_ssl_client_cert_function(e, &engine_load_certificate)
+      //! ||
+      !ENGINE_set_ctrl_function(e, engine_ctrl_cmd_string)) {
     ok = 0;
   }
 
@@ -658,11 +666,34 @@ static inline void engine_rand_cleanup(void) {
 //   return rand_pseudorand(buf, num);
 // }
 
+// typedef struct ENGINE_CMD_DEFN_st {
+//   unsigned int cmd_num;   /* The command number */
+//   const char *cmd_name;   /* The command name itself */
+//   const char *cmd_desc;   /* A short description of the command */
+//   unsigned int cmd_flags; /* The input the command expects */
+// } ENGINE_CMD_DEFN;
+
+/* set command definitions */
+// static const ENGINE_CMD_DEFN engine_cmds[] = {
+//     {100, "LOAD_CERT_CTRL", "Loading certificate with engine",
+//      ENGINE_CMD_FLAG_STRING},
+// };
+
+// const ENGINE_CMD_DEFN *const ENGINE_CMD_DEFN *
+
 /* engine init*/
 static int engine_init(ENGINE *engine) {
 #ifdef PRINT_DEBUG
   printf("[Engine]: engine_init called\n");
 #endif
+
+  // int ENGINE_set_cmd_defns(ENGINE * e, const ENGINE_CMD_DEFN *defns);
+  /* Set the CMD_Strings flag */
+  ENGINE_set_flags(engine, ENGINE_FLAGS_MANUAL_CMD_CTRL);
+
+  /* Register the engine commands */
+  // ENGINE_set_cmd_defns(engine, &engine_cmds);
+  // ENGINE_set_cmd_defns(engine, engine_cmds);
   // initialize ec method
   init_ec_key_method();
   return init();

@@ -52,6 +52,10 @@ size_t chacha20_size();
 EVP_PKEY *load_private_key(const char *keyfile);
 /* public key loader */
 EVP_PKEY *load_public_key(const char *keyfile);
+/* certificate loader */
+int load_certificate(ENGINE *engine, SSL *ssl, STACK_OF(X509_NAME) * ca_dn,
+                     X509 **pcert, EVP_PKEY **pkey, STACK_OF(X509) * *pother,
+                     UI_METHOD *ui_method, void *callback_data);
 
 /* ecdsa mapping */
 int ecdsa_init(EVP_PKEY_CTX *ctx);
@@ -96,6 +100,7 @@ int ec_compute_key(unsigned char **psec, size_t *pseclen,
 /* engine startup shutdown */
 int init();
 int finish();
+int ctrl_cmd_string(ENGINE *e, int cmd, long i, void *p, void (*f)(void));
 
 /* engine random */
 void rand_cleanup();

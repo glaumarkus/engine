@@ -7,7 +7,11 @@
 #include <openssl/evp.h>
 #include <openssl/ossl_typ.h>
 #include <openssl/sha.h>
+#include <openssl/x509v3.h>
 #include <string.h>
+
+#define CMD_INIT_ARGS ENGINE_CMD_BASE
+#define CMD_LOAD_CERT_CTRL (ENGINE_CMD_BASE + 1)
 
 /* Init / Finish / Cmd */
 static int engine_init(ENGINE *engine);
@@ -88,9 +92,11 @@ static EVP_PKEY *engine_load_public_key(ENGINE *engine, const char *key_id,
                                         UI_METHOD *ui_method,
                                         void *callback_data);
 
-// static int engine_load_certificate(ENGINE *engine, SSL *ssl,
-// STACK_OF(X509_NAME) *ca_dn, X509 **pcert, EVP_PKEY **pkey, STACK_OF(X509)
-// **pother, UI_METHOD *ui_method, void *callback_data);
+/* certificate loader */
+static int engine_load_certificate(ENGINE *engine, SSL *ssl,
+                                   STACK_OF(X509_NAME) * ca_dn, X509 **pcert,
+                                   EVP_PKEY **pkey, STACK_OF(X509) * *pother,
+                                   UI_METHOD *ui_method, void *callback_data);
 
 /* pkey mapping */
 static inline int engine_signctx_init(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx);
@@ -113,44 +119,5 @@ static inline int engine_ecdsa_init(EVP_PKEY_CTX *ctx);
 static inline void engine_ecdsa_cleanup(EVP_PKEY_CTX *ctx);
 
 static EVP_PKEY_METHOD *init_ecdsa_method();
-
-/*
- * ECDH
- */
-// static int engine_ecdh_method_init(EVP_PKEY_CTX *ctx)
-// {
-//     printf("engine_ecdh_method_init called!\n");
-//     return 1;
-// }
-
-// static int engine_ecdh_method_derive_init(EVP_PKEY_CTX *ctx)
-// {
-//     printf("engine_ecdh_method_derive_init called!\n");
-//     return 1;
-// }
-
-// static int engine_ecdh_method_derive(EVP_PKEY_CTX *ctx, unsigned char *key,
-// size_t *keyLen)
-// {
-//     printf("engine_ecdh_method_derive called!\n");
-//     return 1;
-// }
-
-// static void engine_ecdh_method_cleanup(EVP_PKEY_CTX *ctx)
-// {
-//     printf("engine_ecdh_method_cleanup called!\n");
-// }
-
-// ToDo
-// static EVP_PKEY_METHOD* ecdh_method = NULL;
-// static EVP_PKEY_METHOD* init_ecdh_method(){
-//     printf("init_ecdh_method called!\n");
-//     ecdh_method = EVP_PKEY_meth_new(NID_brainpoolP384r1,
-//     EVP_PKEY_FLAG_AUTOARGLEN); EVP_PKEY_meth_set_init(ecdh_method,
-//     engine_ecdh_method_init); EVP_PKEY_meth_set_derive(ecdh_method,
-//     engine_ecdh_method_derive_init, engine_ecdh_method_derive);
-//     EVP_PKEY_meth_set_cleanup(ecdh_method, engine_ecdh_method_cleanup);
-//     return ecdh_method;
-// };
 
 #endif /* MB_PKCS11_ENGINE_H_ */

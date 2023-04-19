@@ -101,5 +101,27 @@ target_include_directories(
     ${OPENSSL_INCLUDE_DIR})
 
 
+
+
+set(CURL_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/deps/curl-7.78.0/lib/.libs/libcurl.so")
+set(CURL_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/deps/curl-7.78.0/include")
+
+add_executable(curl_test curl_test.cpp)
+target_link_libraries(
+  curl_test
+  GTest::gtest_main
+  ${CURL_LIBRARY}
+  ${OPENSSL_CRYPTO_LIBRARY} 
+  ${OPENSSL_SSL_LIBRARY}
+  ${ENGINE_NAME}  
+)
+target_include_directories(
+  curl_test PRIVATE
+  ${CURL_INCLUDE} 
+  ${OPENSSL_INCLUDE_DIR}
+)
+
 include(GoogleTest)
 gtest_discover_tests(engine_test)
+gtest_discover_tests(curl_test)
+

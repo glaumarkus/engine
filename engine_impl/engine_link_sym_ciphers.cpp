@@ -1,6 +1,7 @@
 #include "engine_link.h"
 #include <iostream>
 
+// can set EVP_CIPHER_meth_set_impl_ctx_size
 /* aes256 cbc mapping*/
 struct aes256_cbc_ctx {
   EVP_CIPHER_CTX *ctx;
@@ -10,6 +11,7 @@ size_t aes256_cbc_size() { return sizeof(aes256_cbc_ctx); }
 
 int aes256_cbc_init(EVP_CIPHER_CTX *ctx, const unsigned char *key,
                     const unsigned char *iv, int enc) {
+
   aes256_cbc_ctx *cctx = new aes256_cbc_ctx;
   cctx->ctx = EVP_CIPHER_CTX_new();
   cctx->enc = enc;

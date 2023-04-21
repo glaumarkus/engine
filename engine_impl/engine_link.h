@@ -38,6 +38,7 @@ int aes256_gcm_init(EVP_CIPHER_CTX *ctx, const unsigned char *key,
 int aes256_gcm_do_cipher(EVP_CIPHER_CTX *ctx, unsigned char *out,
                          const unsigned char *in, size_t inlen);
 int aes256_gcm_cleanup(EVP_CIPHER_CTX *ctx);
+int aes256_gcm_ctrl(EVP_CIPHER_CTX *ctx, int type, int arg, void *ptr);
 size_t aes256_gcm_size();
 
 /* chacha20 mapping*/

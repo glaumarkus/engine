@@ -9,6 +9,36 @@ struct aes256_cbc_ctx {
 };
 size_t aes256_cbc_size() { return sizeof(aes256_cbc_ctx); }
 
+int set_auth_tag(EVP_CIPHER_CTX *ctx, void *ptr) {
+  aes256_cbc_ctx *cctx = (aes256_cbc_ctx *)EVP_CIPHER_CTX_get_app_data(ctx);
+  return EVP_CIPHER_CTX_ctrl(cctx->ctx, EVP_CTRL_GCM_SET_TAG, 12, ptr);
+}
+
+int get_auth_tag(EVP_CIPHER_CTX *ctx, void *ptr) {
+  aes256_cbc_ctx *cctx = (aes256_cbc_ctx *)EVP_CIPHER_CTX_get_app_data(ctx);
+  return EVP_CIPHER_CTX_ctrl(cctx->ctx, EVP_CTRL_GCM_GET_TAG, 12, ptr);
+}
+
+int aes256_gcm_ctrl(EVP_CIPHER_CTX *ctx, int type, int arg, void *ptr) {
+  printf("aes256_gcm_ctrl called\n");
+  printf("Params: \n");
+  printf("ctx: %p, type: %d, arg: %d, ptr: %p\n", ctx, type, arg, ptr);
+  int ok = 0;
+  switch (type) {
+  case EVP_CTRL_GCM_SET_TAG:
+    ok = set_auth_tag(ctx, ptr);
+    printf("EVP_CTRL_GCM_SET_TAG: \n");
+    break;
+  case EVP_CTRL_GCM_GET_TAG:
+    ok = get_auth_tag(ctx, ptr);
+    printf("EVP_CTRL_GCM_GET_TAG: \n");
+    break;
+  default:
+    break;
+  }
+  return ok;
+}
+
 int aes256_cbc_init(EVP_CIPHER_CTX *ctx, const unsigned char *key,
                     const unsigned char *iv, int enc) {
 

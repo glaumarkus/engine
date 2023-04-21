@@ -173,7 +173,7 @@ int engine_bind(ENGINE *e, const char *id) {
       !ENGINE_set_ciphers(e, &engine_cipher_selector) ||
       !ENGINE_set_load_privkey_function(e, &engine_load_private_key) ||
       !ENGINE_set_load_pubkey_function(e, &engine_load_public_key) ||
-      // !ENGINE_set_pkey_meths(e, &engine_pkey_selector) ||
+      !ENGINE_set_pkey_meths(e, &engine_pkey_selector) ||
       !ENGINE_set_EC(e, engine_ec_key_method) ||
       //! ENGINE_set_load_ssl_client_cert_function(e, &engine_load_certificate)
       //! ||
@@ -265,6 +265,7 @@ static int engine_cipher_selector(ENGINE *e, const EVP_CIPHER **cipher,
     break;
   case NID_aes_256_gcm:
     *cipher = init_engine_aes256_gcm_method();
+    break;
   default:
     *cipher = NULL;
     ok = 0;
@@ -559,9 +560,19 @@ static const EVP_CIPHER *init_engine_aes256_gcm_method(void) {
                                   engine_aes256_gcm_do_cipher);
     EVP_CIPHER_meth_set_cleanup(engine_aes256_gcm_method,
                                 engine_aes256_gcm_cleanup);
+    EVP_CIPHER_meth_set_ctrl(engine_aes256_gcm_method, engine_aes256_gcm_ctrl);
   }
   return engine_aes256_gcm_method;
 }
+
+static inline int engine_aes256_gcm_ctrl(EVP_CIPHER_CTX *ctx, int type, int arg,
+                                         void *ptr) {
+#ifdef PRINT_DEBUG
+  printf("[Engine]: engine_aes256_gcm_ctrl called!\n");
+#endif
+  return aes256_gcm_ctrl(ctx, type, arg, ptr);
+}
+
 static inline int engine_aes256_gcm_init(EVP_CIPHER_CTX *ctx,
                                          const unsigned char *key,
                                          const unsigned char *iv, int enc) {

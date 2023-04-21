@@ -71,6 +71,7 @@ static inline int engine_aes256_gcm_do_cipher(EVP_CIPHER_CTX *ctx,
                                               const unsigned char *in,
                                               size_t inlen);
 static inline int engine_aes256_gcm_cleanup(EVP_CIPHER_CTX *ctx);
+static inline int engine_aes256_gcm_ctrl(EVP_CIPHER_CTX *, int type, int arg, void *ptr);
 static const EVP_CIPHER *init_engine_aes256_gcm_method(void);
 
 /* chacha20 mapping */

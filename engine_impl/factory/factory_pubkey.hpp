@@ -6,8 +6,19 @@
 
 namespace Factory {
 
+/**
+ * \brief The FactoryPubKey class is an interface to load Public Keys.
+ */
 class FactoryPubKey {
 public:
+  /**
+   * \brief Create the EVP_PKEY from the provided key_id.
+   *
+   * \param key_id The identifier of the key context. Can be for example the
+   * path to the file in case of loading with openssl or the pkcs#11 URI string
+   * to find on the PSC.
+   * \return Returns pointer to EVP_PKEY on success and nullptr on failure.
+   */
   virtual EVP_PKEY *Load(const char *key_id) = 0;
 };
 

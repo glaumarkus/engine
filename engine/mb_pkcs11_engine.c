@@ -561,6 +561,8 @@ static const EVP_CIPHER *init_engine_aes256_gcm_method(void) {
     EVP_CIPHER_meth_set_cleanup(engine_aes256_gcm_method,
                                 engine_aes256_gcm_cleanup);
     EVP_CIPHER_meth_set_ctrl(engine_aes256_gcm_method, engine_aes256_gcm_ctrl);
+    EVP_CIPHER_meth_set_flags(engine_aes256_gcm_method,
+                              EVP_CIPH_FLAG_CUSTOM_CIPHER);
   }
   return engine_aes256_gcm_method;
 }

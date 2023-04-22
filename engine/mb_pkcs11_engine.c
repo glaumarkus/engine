@@ -341,8 +341,6 @@ static EVP_PKEY_METHOD *init_ecdsa_method() {
     // dont know
     EVP_PKEY_meth_set_derive(engine_ecdsa_method, engine_ecdsa_derive_init,
                              engine_ecdsa_derive);
-
-    // set size
   }
   return engine_ecdsa_method;
 };

@@ -19,10 +19,10 @@ int parse_cmd_string(void *p) {
   return ok;
 }
 
+
 /*
 --> cast to this structure
 */
-
 int load_certificate(void *cert) {
 
   int ok = 0;

@@ -19,9 +19,9 @@ public:
    * to find on the PSC.
    * \return Returns pointer to EVP_PKEY on success and nullptr on failure.
    */
-  virtual EVP_PKEY *Load(const char *key_id) = 0;
+  virtual EVP_PKEY *Load(const char *key_id) noexcept = 0;
 };
 
 } // namespace Factory
 
-#endif ENGINE_IMPL_FACTORY_FACTORY_PUBKEY_HPP
+#endif // ENGINE_IMPL_FACTORY_FACTORY_PUBKEY_HPP

@@ -66,14 +66,7 @@ set_target_properties(${ENGINE_NAME} PROPERTIES VERSION ${ENGINE_VERSION})
 target_include_directories(${ENGINE_NAME} PRIVATE ${OPENSSL_INCLUDE_DIR} ${OPENSSL_CRYPTO_INCLUDE_DIR} engine_impl)
 target_link_libraries(${ENGINE_NAME} PRIVATE ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY} ${ENGINE_IMPL_NAME})
 
-
-# set(CURL_LIBRARY "/home/glaum/curl/curl-7.68.0/lib/.libs/libcurl.so")
-# set(CURL_INCLUDE "/home/glaum/curl/curl-7.68.0/include")
-# message("CURL_INCLUDE_DIRS: ${CURL_INCLUDE}")
-
-# add_executable(${TEST_NAME} curl_example.cpp)
-# target_link_libraries(${TEST_NAME} ${CURL_LIBRARY} ${ENGINE_NAME} ${ENGINE_IMPL_NAME} ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY})
-# target_include_directories(${TEST_NAME} PRIVATE ${CURL_INCLUDE} ${OPENSSL_INCLUDE_DIR})
+# openssl tests
 
 include(FetchContent)
 FetchContent_Declare(
@@ -100,7 +93,88 @@ target_include_directories(
     ${CURL_INCLUDE} 
     ${OPENSSL_INCLUDE_DIR})
 
+# add factory 
+#add_library(
+#  engine_factory
+#)
+#target_include_directories(engine_factory PUBLIC engine_impl/factory/*.hpp)
 
+set(ENGINE_IMPL_FACTORY engine_impl)
+set(ENGINE_IMPL_SRC engine_impl/src)
+
+# add impl tests
+add_executable(cert_test 
+  engine_impl/src/asym/sw_cert.hpp
+  engine_impl/src/asym/sw_cert.cpp 
+  engine_impl/src/asym/sw_pkey.hpp
+  engine_impl/src/asym/sw_pkey.cpp
+  engine_impl/src/asym/sw_pubkey.hpp
+  engine_impl/src/asym/sw_pubkey.cpp
+  engine_impl/unit_tests/test_sw_loaders.cpp)
+
+target_link_libraries(
+  cert_test
+  GTest::gtest_main
+  ${OPENSSL_CRYPTO_LIBRARY} 
+  ${OPENSSL_SSL_LIBRARY}
+)
+
+target_include_directories(
+  cert_test PRIVATE 
+    ${OPENSSL_INCLUDE_DIR}
+    ${ENGINE_IMPL_FACTORY}
+    ${ENGINE_IMPL_SRC}
+    )
+
+
+# add impl tests
+add_executable(digest_test 
+  engine_impl/src/digests/sw_digest_sha256.hpp
+  engine_impl/src/digests/sw_digest_sha256.cpp 
+  engine_impl/src/digests/sw_digest_sha384.hpp
+  engine_impl/src/digests/sw_digest_sha384.cpp 
+  engine_impl/unit_tests/test_sw_digests.cpp
+  )
+
+target_link_libraries(
+  digest_test
+  GTest::gtest_main
+  ${OPENSSL_CRYPTO_LIBRARY} 
+  ${OPENSSL_SSL_LIBRARY}
+)
+
+target_include_directories(
+  digest_test PRIVATE 
+    ${OPENSSL_INCLUDE_DIR}
+    ${ENGINE_IMPL_FACTORY}
+    ${ENGINE_IMPL_SRC}
+    )
+
+
+# add impl tests
+add_executable(cipher_test 
+  engine_impl/src/ciphers/sw_cipher_aes256cbc.hpp  
+  engine_impl/src/ciphers/sw_cipher_aes256cbc.cpp  
+  engine_impl/src/ciphers/sw_cipher_aes256gcm.hpp  
+  engine_impl/src/ciphers/sw_cipher_aes256gcm.cpp  
+  engine_impl/src/ciphers/sw_cipher_chacha20.hpp  
+  engine_impl/src/ciphers/sw_cipher_chacha20.cpp  
+  engine_impl/unit_tests/test_sw_ciphers.cpp
+  )
+
+target_link_libraries(
+  cipher_test
+  GTest::gtest_main
+  ${OPENSSL_CRYPTO_LIBRARY} 
+  ${OPENSSL_SSL_LIBRARY}
+)
+
+target_include_directories(
+  cipher_test PRIVATE 
+    ${OPENSSL_INCLUDE_DIR}
+    ${ENGINE_IMPL_FACTORY}
+    ${ENGINE_IMPL_SRC}
+    )
 
 
 set(CURL_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/deps/curl-7.78.0/lib/.libs/libcurl.so")

@@ -17,7 +17,7 @@ public:
    * \brief Returns the size of the implementation-specific context object.
    * \return The size of the implementation-specific context object in bytes.
    */
-  virtual std::size_t ImplCtxSize() const = 0;
+  virtual std::size_t ImplCtxSize() const noexcept = 0;
 
   /**
    * \brief Initializes the cipher context with the given key and initialization
@@ -32,7 +32,7 @@ public:
    * \return 1 on success, or 0 otherwise.
    */
   virtual int Init(EVP_CIPHER_CTX *ctx, const unsigned char *key,
-                   const unsigned char *iv, int enc) = 0;
+                   const unsigned char *iv, int enc) noexcept = 0;
 
   /**
    * \brief Performs the cipher operation on the given input data.
@@ -46,7 +46,7 @@ public:
    * \return The number of bytes written to the output buffer, or -1 on error.
    */
   virtual int DoCipher(EVP_CIPHER_CTX *ctx, unsigned char *out,
-                       const unsigned char *in, size_t inlen) = 0;
+                       const unsigned char *in, size_t inlen) noexcept = 0;
 
   /**
    * \brief Cleans up the cipher context after use.
@@ -55,7 +55,7 @@ public:
    * \param ctx A pointer to the cipher context to clean up.
    * \return 1 on success, or 0 otherwise.
    */
-  virtual int Cleanup(EVP_CIPHER_CTX *ctx) = 0;
+  virtual int Cleanup(EVP_CIPHER_CTX *ctx) noexcept = 0;
 
   /**
    * \brief Provides additional control over the cipher context.
@@ -67,9 +67,14 @@ public:
    * \param ptr A pointer to additional data specific to the control operation.
    * \return The return value of the control operation, or -1 on error.
    */
-  virtual int Ctrl(EVP_CIPHER_CTX *ctx, int type, int arg, void *ptr) = 0;
+  virtual int Ctrl(EVP_CIPHER_CTX *ctx, int type, int arg,
+                   void *ptr) noexcept = 0;
+
+
+  virtual std::unique_ptr<FactoryCipher> GetCipher(int nid) noexcept = 0;
+  vritual std::unique_ptr<FactoryDigest> GetDigest(int nid) noexcept = 0;
 };
 
 } // namespace Factory
 
-#endif ENGINE_IMPL_FACTORY_FACTORY_CIPHER_HPP
+#endif // ENGINE_IMPL_FACTORY_FACTORY_CIPHER_HPP

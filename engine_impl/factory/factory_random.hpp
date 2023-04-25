@@ -19,7 +19,7 @@ public:
   /**
    * \brief Cleanup the random number generator
    */
-  virtual void Cleanup() = 0;
+  virtual void Cleanup() noexcept = 0;
 
   /**
    * \brief Generate random bytes
@@ -29,23 +29,23 @@ public:
    *
    * \return 1 on success, 0 on failure
    */
-  virtual int RandomBytes(unsigned char *buf, int num) = 0;
+  virtual int RandomBytes(unsigned char *buf, int num) noexcept = 0;
 
   /**
    * \brief Get the status of the random number generator
    *
    * \return 1 if the generator is working properly, 0 otherwise
    */
-  virtual int RandomStatus() = 0;
+  virtual int RandomStatus() noexcept = 0;
 
   /**
    * \brief Set the seed of the random number generator
    *
    * \return 1 on success, 0 on failure
    */
-  virtual int SetSeed() = 0;
+  virtual int SetSeed() noexcept = 0;
 };
 
 } // namespace Factory
 
-#endif ENGINE_IMPL_FACTORY_FACTORY_RANDOM_HPP
+#endif // ENGINE_IMPL_FACTORY_FACTORY_RANDOM_HPP

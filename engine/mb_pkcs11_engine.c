@@ -20,138 +20,6 @@ RAND_METHOD engine_random_method = {
     NULL                  /* status */
 };
 
-static inline int engine_ec_key_compute_key(unsigned char **psec,
-                                            size_t *pseclen,
-                                            const EC_POINT *pub_key,
-                                            const EC_KEY *ecdh) {
-#ifdef PRINT_DEBUG
-  printf("[Engine]: engine_ec_key_compute_key called\n");
-#endif
-  return ec_compute_key(psec, pseclen, pub_key, ecdh);
-}
-
-static inline int engine_ec_key_keygen(EC_KEY *key) {
-#ifdef PRINT_DEBUG
-  printf("[Engine]: engine_ec_key_keygen called\n");
-#endif
-  return ec_keygen(key);
-}
-
-static inline int engine_ec_key_init(EC_KEY *key) {
-#ifdef PRINT_DEBUG
-  printf("[Engine]: engine_ec_key_init called\n");
-#endif
-  return ec_init(key);
-}
-static inline void engine_ec_key_finish(EC_KEY *key) {
-#ifdef PRINT_DEBUG
-  printf("[Engine]: engine_ec_key_finish called\n");
-#endif
-  ec_finish(key);
-}
-
-static inline int engine_ec_key_set_group(EC_KEY *key, const EC_GROUP *grp) {
-#ifdef PRINT_DEBUG
-  printf("[Engine]: engine_ec_key_set_group called\n");
-#endif
-  return ec_set_group(key, grp);
-}
-
-static inline int engine_ec_key_set_private(EC_KEY *key,
-                                            const BIGNUM *priv_key) {
-#ifdef PRINT_DEBUG
-  printf("[Engine]: engine_ec_key_set_private called\n");
-#endif
-  return ec_set_private(key, priv_key);
-}
-
-static inline int engine_ec_key_set_public(EC_KEY *key,
-                                           const EC_POINT *pub_key) {
-#ifdef PRINT_DEBUG
-  printf("[Engine]: engine_ec_key_set_public called\n");
-#endif
-  return ec_set_public(key, pub_key);
-}
-
-static inline int engine_ec_key_copy(EC_KEY *dest, const EC_KEY *src) {
-#ifdef PRINT_DEBUG
-  printf("[Engine]: engine_ec_key_copy called\n");
-#endif
-  return ec_copy(dest, src);
-}
-
-static inline int engine_ec_key_sign(int type, const unsigned char *dgst,
-                                     int dlen, unsigned char *sig,
-                                     unsigned int *siglen, const BIGNUM *kinv,
-                                     const BIGNUM *r, EC_KEY *eckey) {
-#ifdef PRINT_DEBUG
-  printf("[Engine]: engine_ec_key_sign called\n");
-#endif
-  return ec_sign(type, dgst, dlen, sig, siglen, kinv, r, eckey);
-}
-static inline int engine_ec_key_sign_setup(EC_KEY *eckey, BN_CTX *ctx_in,
-                                           BIGNUM **kinvp, BIGNUM **rp) {
-#ifdef PRINT_DEBUG
-  printf("[Engine]: engine_ec_key_sign_setup called\n");
-#endif
-  return ec_sign_setup(eckey, ctx_in, kinvp, rp);
-}
-static inline ECDSA_SIG *engine_ec_key_sign_sig(const unsigned char *dgst,
-                                                int dgst_len,
-                                                const BIGNUM *in_kinv,
-                                                const BIGNUM *in_r,
-                                                EC_KEY *eckey) {
-#ifdef PRINT_DEBUG
-  printf("[Engine]: engine_ec_key_sign_sig called\n");
-#endif
-  return ec_sign_sig(dgst, dgst_len, in_kinv, in_r, eckey);
-}
-
-static inline int engine_ec_key_verify(int type, const unsigned char *dgst,
-                                       int dgst_len,
-                                       const unsigned char *sigbuf, int sig_len,
-                                       EC_KEY *eckey) {
-#ifdef PRINT_DEBUG
-  printf("[Engine]: engine_ec_key_verify called\n");
-#endif
-  return ec_verify(type, dgst, dgst_len, sigbuf, sig_len, eckey);
-}
-static inline int engine_ec_key_verify_sig(const unsigned char *dgst,
-                                           int dgst_len, const ECDSA_SIG *sig,
-                                           EC_KEY *eckey) {
-#ifdef PRINT_DEBUG
-  printf("[Engine]: engine_ec_key_verify_sig called\n");
-#endif
-  return ec_verify_sig(dgst, dgst_len, sig, eckey);
-}
-
-static EC_KEY_METHOD *engine_ec_key_method = NULL;
-static void init_ec_key_method() {
-#ifdef PRINT_DEBUG
-  printf("[Engine]: engine_bind called\n");
-#endif
-  if (engine_ec_key_method == NULL) {
-    engine_ec_key_method = EC_KEY_METHOD_new(engine_ec_key_method);
-    EC_KEY_METHOD_set_compute_key(engine_ec_key_method,
-                                  &engine_ec_key_compute_key);
-    EC_KEY_METHOD_set_keygen(engine_ec_key_method, &engine_ec_key_keygen);
-    EC_KEY_METHOD_set_init(engine_ec_key_method, &engine_ec_key_init,
-                           &engine_ec_key_finish, &engine_ec_key_copy,
-                           &engine_ec_key_set_group, &engine_ec_key_set_private,
-                           &engine_ec_key_set_public);
-    EC_KEY_METHOD_set_sign(engine_ec_key_method, &engine_ec_key_sign,
-                           &engine_ec_key_sign_setup, &engine_ec_key_sign_sig);
-    EC_KEY_METHOD_set_verify(engine_ec_key_method, &engine_ec_key_verify,
-                             &engine_ec_key_verify_sig);
-  }
-}
-static void finish_ec_key_method() {
-#ifdef PRINT_DEBUG
-  printf("[Engine]: finish_ec_key_method called\n");
-#endif
-  EC_KEY_METHOD_free(engine_ec_key_method);
-}
-
 static int engine_ctrl_cmd_string(ENGINE *e, int cmd, long i, void *p,
                                   void (*f)(void)) {
 #ifdef PRINT_DEBUG
@@ -174,9 +42,6 @@ int engine_bind(ENGINE *e, const char *id) {
       !ENGINE_set_load_privkey_function(e, &engine_load_private_key) ||
       !ENGINE_set_load_pubkey_function(e, &engine_load_public_key) ||
       !ENGINE_set_pkey_meths(e, &engine_pkey_selector) ||
-      !ENGINE_set_EC(e, engine_ec_key_method) ||
-      //! ENGINE_set_load_ssl_client_cert_function(e, &engine_load_certificate)
-      //! ||
       !ENGINE_set_ctrl_function(e, engine_ctrl_cmd_string)) {
     ok = 0;
   }
@@ -293,7 +158,7 @@ static int engine_pkey_selector(ENGINE *e, EVP_PKEY_METHOD **method,
   switch (nid) {
   // this comes out when calling with EC_KEY
   case NID_X9_62_id_ecPublicKey:
-    *method = init_ecdsa_method();
+    *method = init_ec_method();
     break;
   default:
     *method = NULL;
@@ -303,109 +168,125 @@ static int engine_pkey_selector(ENGINE *e, EVP_PKEY_METHOD **method,
   return ok;
 }
 
-static inline int engine_ecdsa_derive_init(EVP_PKEY_CTX *ctx) {
+static inline int engine_ec_derive_init(EVP_PKEY_CTX *ctx) {
 #ifdef PRINT_DEBUG
-  printf("[Engine]: engine_ecdsa_derive_init called!\n");
+  printf("[Engine]: engine_ec_derive_init called!\n");
 #endif
   return ecdh_derive_init(ctx);
 }
-static inline int engine_ecdsa_derive(EVP_PKEY_CTX *ctx, unsigned char *key,
-                                      size_t *keylen) {
+static inline int engine_ec_derive(EVP_PKEY_CTX *ctx, unsigned char *key,
+                                   size_t *keylen) {
 #ifdef PRINT_DEBUG
-  printf("[Engine]: engine_ecdsa_derive called!\n");
+  printf("[Engine]: engine_ec_derive called!\n");
 #endif
   return ecdh_derive(ctx, key, keylen);
 }
 
 /* pkey method */
-static EVP_PKEY_METHOD *engine_ecdsa_method = NULL;
-static EVP_PKEY_METHOD *init_ecdsa_method() {
+static EVP_PKEY_METHOD *engine_ec_method = NULL;
+static EVP_PKEY_METHOD *init_ec_method() {
 #ifdef PRINT_DEBUG
   printf("[Engine]: init_ecdsa_method called!\n");
 #endif
-  if (engine_ecdsa_method == NULL) {
-    engine_ecdsa_method =
+  if (engine_ec_method == NULL) {
+    engine_ec_method =
         EVP_PKEY_meth_new(NID_brainpoolP384r1, EVP_PKEY_FLAG_AUTOARGLEN);
-    EVP_PKEY_meth_set_init(engine_ecdsa_method, engine_ecdsa_init);
-    EVP_PKEY_meth_set_cleanup(engine_ecdsa_method, engine_ecdsa_cleanup);
-    EVP_PKEY_meth_set_ctrl(engine_ecdsa_method, engine_ecdsa_ctrl,
-                           engine_ecdsa_ctrl_str);
-    // ecdsa
-    EVP_PKEY_meth_set_digest_custom(engine_ecdsa_method,
-                                    engine_ecdsa_digest_custom);
-    EVP_PKEY_meth_set_signctx(engine_ecdsa_method, engine_signctx_init,
-                              engine_signctx);
-    EVP_PKEY_meth_set_verifyctx(engine_ecdsa_method, engine_verifyctx_init,
-                                engine_verifyctx);
+    EVP_PKEY_meth_set_init(engine_ec_method, engine_ec_init);
+    EVP_PKEY_meth_set_cleanup(engine_ec_method, engine_ec_cleanup);
+    EVP_PKEY_meth_set_ctrl(engine_ec_method, engine_ec_ctrl,
+                           engine_ec_ctrl_str);
+    // support ECDSA
+    EVP_PKEY_meth_set_digest_custom(engine_ec_method, engine_ec_digest_custom);
+    EVP_PKEY_meth_set_signctx(engine_ec_method, engine_ec_signctx_init,
+                              engine_ec_signctx);
+    EVP_PKEY_meth_set_verifyctx(engine_ec_method, engine_ec_verifyctx_init,
+                                engine_ec_verifyctx);
 
-    // dont know
-    EVP_PKEY_meth_set_derive(engine_ecdsa_method, engine_ecdsa_derive_init,
-                             engine_ecdsa_derive);
+    // support ECDH
+    EVP_PKEY_meth_set_derive(engine_ec_method, engine_ec_derive_init,
+                             engine_ec_derive);
+    // support ECDHE
+    EVP_PKEY_meth_set_keygen(engine_ec_method, engine_ec_keygen_init, engine_ec_keygen);
   }
-  return engine_ecdsa_method;
+  return engine_ec_method;
 };
 
-static inline int engine_ecdsa_init(EVP_PKEY_CTX *ctx) {
+/*
+ToDo
+*/
+static inline int engine_ec_keygen_init(EVP_PKEY_CTX *ctx) {
+  return 0;
+}
+/*
+ToDo
+*/
+static inline int engine_ec_keygen(EVP_PKEY_CTX *ctx, EVP_PKEY *pkey)
+{
+  return 0;
+}
+
+static inline int engine_ec_init(EVP_PKEY_CTX *ctx) {
 #ifdef PRINT_DEBUG
-  printf("[Engine]: engine_ecdsa_cleanup called!\n");
+  printf("[Engine]: engine_ec_cleanup called!\n");
 #endif
   return ecdsa_init(ctx);
 }
-static inline void engine_ecdsa_cleanup(EVP_PKEY_CTX *ctx) {
+static inline void engine_ec_cleanup(EVP_PKEY_CTX *ctx) {
 #ifdef PRINT_DEBUG
-  printf("[Engine]: engine_ecdsa_cleanup called!\n");
+  printf("[Engine]: engine_ec_cleanup called!\n");
 #endif
   ecdsa_cleanup(ctx);
 }
 
-static inline int engine_ecdsa_ctrl(EVP_PKEY_CTX *ctx, int type, int p1,
-                                    void *p2) {
+static inline int engine_ec_ctrl(EVP_PKEY_CTX *ctx, int type, int p1,
+                                 void *p2) {
 #ifdef PRINT_DEBUG
-  printf("[Engine]: engine_ecdsa_ctrl called!\n");
+  printf("[Engine]: engine_ec_ctrl called!\n");
 #endif
   return ecdsa_ctrl(ctx, type, p1, p2);
 }
 
-static inline int engine_ecdsa_ctrl_str(EVP_PKEY_CTX *ctx, const char *type,
-                                        const char *value) {
+static inline int engine_ec_ctrl_str(EVP_PKEY_CTX *ctx, const char *type,
+                                     const char *value) {
 #ifdef PRINT_DEBUG
-  printf("[Engine]: engine_ecdsa_ctrl_str called!\n");
+  printf("[Engine]: engine_ec_ctrl_str called!\n");
 #endif
   return 1;
 }
 
-static inline int engine_ecdsa_digest_custom(EVP_PKEY_CTX *ctx,
-                                             EVP_MD_CTX *mctx) {
+static inline int engine_ec_digest_custom(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx) {
 #ifdef PRINT_DEBUG
-  printf("[Engine]: engine_ecdsa_digest_custom called!\n");
+  printf("[Engine]: engine_ec_digest_custom called!\n");
 #endif
   return ecdsa_custom_digest(ctx, mctx);
 }
 
-static inline int engine_signctx_init(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx) {
+static inline int engine_ec_signctx_init(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx) {
 #ifdef PRINT_DEBUG
   printf("[Engine]: engine_signctx_init called!\n");
 #endif
   return ecdsa_signctx_init(ctx, mctx);
 }
 
-static inline int engine_signctx(EVP_PKEY_CTX *ctx, unsigned char *sig,
-                                 size_t *siglen, EVP_MD_CTX *mctx) {
+static inline int engine_ec_signctx(EVP_PKEY_CTX *ctx, unsigned char *sig,
+                                    size_t *siglen, EVP_MD_CTX *mctx) {
 #ifdef PRINT_DEBUG
   printf("[Engine]: engine_signctx called!\n");
 #endif
   return ecdsa_signctx(ctx, sig, siglen, mctx);
 }
 
-static inline int engine_verifyctx_init(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx) {
+static inline int engine_ec_verifyctx_init(EVP_PKEY_CTX *ctx,
+                                           EVP_MD_CTX *mctx) {
 #ifdef PRINT_DEBUG
   printf("[Engine]: engine_signctx called!\n");
 #endif
   return ecdsa_verifyctx_init(ctx, mctx);
 }
 
-static inline int engine_verifyctx(EVP_PKEY_CTX *ctx, const unsigned char *sig,
-                                   int siglen, EVP_MD_CTX *mctx) {
+static inline int engine_ec_verifyctx(EVP_PKEY_CTX *ctx,
+                                      const unsigned char *sig, int siglen,
+                                      EVP_MD_CTX *mctx) {
 #ifdef PRINT_DEBUG
   printf("[Engine]: engine_signctx called!\n");
 #endif
@@ -664,34 +545,6 @@ static inline void engine_rand_cleanup(void) {
   rand_cleanup();
 }
 
-// static inline int engine_rand_add(const void *buf, int num, double
-// randomness) { #ifdef PRINT_DEBUG
-//   printf("[Engine]: engine_rand_add called\n");
-// #endif
-//   return rand_add(buf, num, randomness);
-// }
-// static inline int engine_rand_pseudorand(unsigned char *buf, int num) {
-// #ifdef PRINT_DEBUG
-//   printf("[Engine]: engine_rand_pseudorand called\n");
-// #endif
-//   return rand_pseudorand(buf, num);
-// }
-
-// typedef struct ENGINE_CMD_DEFN_st {
-//   unsigned int cmd_num;   /* The command number */
-//   const char *cmd_name;   /* The command name itself */
-//   const char *cmd_desc;   /* A short description of the command */
-//   unsigned int cmd_flags; /* The input the command expects */
-// } ENGINE_CMD_DEFN;
-
-/* set command definitions */
-// static const ENGINE_CMD_DEFN engine_cmds[] = {
-//     {100, "LOAD_CERT_CTRL", "Loading certificate with engine",
-//      ENGINE_CMD_FLAG_STRING},
-// };
-
-// const ENGINE_CMD_DEFN *const ENGINE_CMD_DEFN *
-
 /* engine init*/
 static int engine_init(ENGINE *engine) {
 #ifdef PRINT_DEBUG
@@ -701,12 +554,6 @@ static int engine_init(ENGINE *engine) {
   // int ENGINE_set_cmd_defns(ENGINE * e, const ENGINE_CMD_DEFN *defns);
   /* Set the CMD_Strings flag */
   ENGINE_set_flags(engine, ENGINE_FLAGS_MANUAL_CMD_CTRL);
-
-  /* Register the engine commands */
-  // ENGINE_set_cmd_defns(engine, &engine_cmds);
-  // ENGINE_set_cmd_defns(engine, engine_cmds);
-  // initialize ec method
-  init_ec_key_method();
   return init();
 }
 
@@ -715,7 +562,5 @@ static int engine_finish(ENGINE *engine) {
 #ifdef PRINT_DEBUG
   printf("[Engine]: engine_finish called\n");
 #endif
-  // finish ec method
-  finish_ec_key_method();
   return finish();
 }

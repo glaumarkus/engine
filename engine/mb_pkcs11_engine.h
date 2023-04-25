@@ -71,7 +71,8 @@ static inline int engine_aes256_gcm_do_cipher(EVP_CIPHER_CTX *ctx,
                                               const unsigned char *in,
                                               size_t inlen);
 static inline int engine_aes256_gcm_cleanup(EVP_CIPHER_CTX *ctx);
-static inline int engine_aes256_gcm_ctrl(EVP_CIPHER_CTX *, int type, int arg, void *ptr);
+static inline int engine_aes256_gcm_ctrl(EVP_CIPHER_CTX *, int type, int arg,
+                                         void *ptr);
 static const EVP_CIPHER *init_engine_aes256_gcm_method(void);
 
 /* chacha20 mapping */
@@ -100,25 +101,27 @@ static int engine_load_certificate(ENGINE *engine, SSL *ssl,
                                    UI_METHOD *ui_method, void *callback_data);
 
 /* pkey mapping */
-static inline int engine_signctx_init(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx);
-static inline int engine_signctx(EVP_PKEY_CTX *ctx, unsigned char *sig,
-                                 size_t *siglen, EVP_MD_CTX *mctx);
+static inline int engine_ec_signctx_init(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx);
+static inline int engine_ec_signctx(EVP_PKEY_CTX *ctx, unsigned char *sig,
+                                    size_t *siglen, EVP_MD_CTX *mctx);
 
-static inline int engine_verifyctx_init(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx);
-static inline int engine_verifyctx(EVP_PKEY_CTX *ctx, const unsigned char *sig,
-                                   int siglen, EVP_MD_CTX *mctx);
+static inline int engine_ec_verifyctx_init(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx);
+static inline int engine_ec_verifyctx(EVP_PKEY_CTX *ctx,
+                                      const unsigned char *sig, int siglen,
+                                      EVP_MD_CTX *mctx);
 
-static inline int engine_ecdsa_digest_custom(EVP_PKEY_CTX *ctx,
-                                             EVP_MD_CTX *mctx);
+static inline int engine_ec_digest_custom(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx);
 
-static inline int engine_ecdsa_ctrl(EVP_PKEY_CTX *ctx, int type, int p1,
-                                    void *p2);
-static inline int engine_ecdsa_ctrl_str(EVP_PKEY_CTX *ctx, const char *type,
-                                        const char *value);
+static inline int engine_ec_ctrl(EVP_PKEY_CTX *ctx, int type, int p1, void *p2);
+static inline int engine_ec_ctrl_str(EVP_PKEY_CTX *ctx, const char *type,
+                                     const char *value);
 
-static inline int engine_ecdsa_init(EVP_PKEY_CTX *ctx);
-static inline void engine_ecdsa_cleanup(EVP_PKEY_CTX *ctx);
+static inline int engine_ec_init(EVP_PKEY_CTX *ctx);
+static inline void engine_ec_cleanup(EVP_PKEY_CTX *ctx);
 
-static EVP_PKEY_METHOD *init_ecdsa_method();
+static inline int engine_ec_keygen_init(EVP_PKEY_CTX *ctx);
+static inline int engine_ec_keygen(EVP_PKEY_CTX *ctx, EVP_PKEY *pkey);
+
+static EVP_PKEY_METHOD *init_ec_method();
 
 #endif /* MB_PKCS11_ENGINE_H_ */

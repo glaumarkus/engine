@@ -2,10 +2,8 @@
 #include <iostream>
 #include <cstring>
 
-#include "src/digests/sw_digest_sha256.hpp"
 #include "src/engine_factory.hpp"
 
-// can set data with EVP_MD_meth_set_app_datasize
 
 /* sha256 mapping */
 size_t sha256_size() { 

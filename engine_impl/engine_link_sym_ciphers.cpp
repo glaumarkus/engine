@@ -1,49 +1,40 @@
 #include "engine_link.h"
 #include <iostream>
+#include <cstring>
+
+#include "src/engine_factory.hpp"
 
 // can set EVP_CIPHER_meth_set_impl_ctx_size
 /* aes256 cbc mapping*/
-struct aes256_cbc_ctx {
-  EVP_CIPHER_CTX *ctx;
-  int enc;
-};
-size_t aes256_cbc_size() { return sizeof(aes256_cbc_ctx); }
+size_t aes256_cbc_size() { 
+  return sizeof(Factory::FactoryCipher*); }
 
-int aes256_cbc_init(EVP_CIPHER_CTX *ctx, const unsigned char *key,
+int aes256_cbc_init(engine_factory_instance* instance, EVP_CIPHER_CTX *ctx, const unsigned char *key,
                     const unsigned char *iv, int enc) {
-
-  aes256_cbc_ctx *cctx = new aes256_cbc_ctx;
-  cctx->ctx = EVP_CIPHER_CTX_new();
-  cctx->enc = enc;
-  int ret = 0;
-  if (enc == 1) {
-    ret = EVP_EncryptInit_ex(cctx->ctx, EVP_aes_256_cbc(), nullptr, key, iv);
-  } else {
-    ret = EVP_DecryptInit_ex(cctx->ctx, EVP_aes_256_cbc(), nullptr, key, iv);
+  int ok = 0;
+  auto *factory = static_cast<Factory::SoftwareImpl::EngineFactory*>(instance->instance);
+  if (factory != nullptr)
+  {
+    auto factory_cipher = factory->GetCipher(NID_aes_256_cbc);
+    auto *cipher = static_cast<Factory::FactoryCipher*>(factory_cipher.release());
+    EVP_CIPHER_CTX_set_app_data(ctx, cipher);
+    if (cipher != nullptr)
+    {
+      ok = cipher->Init(ctx, key, iv, enc);
+    }
   }
-  EVP_CIPHER_CTX_set_app_data(ctx, cctx);
-  return ret;
+  return ok;
 }
 
 int aes256_cbc_do_cipher(EVP_CIPHER_CTX *ctx, unsigned char *out,
                          const unsigned char *in, size_t inlen) {
-  aes256_cbc_ctx *cctx = (aes256_cbc_ctx *)EVP_CIPHER_CTX_get_app_data(ctx);
-  int len = 0;
-  int ret = 0;
-
-  if (cctx->enc == 1) {
-    ret = EVP_EncryptUpdate(cctx->ctx, out, &len, in, inlen);
-  } else {
-    ret = EVP_DecryptUpdate(cctx->ctx, out, &len, in, inlen);
-  }
-  return ret;
+  auto *cipher = reinterpret_cast<Factory::FactoryCipher*>(EVP_CIPHER_CTX_get_app_data(ctx));
+  return cipher->DoCipher(ctx, out, in, inlen);
 }
 
 int aes256_cbc_cleanup(EVP_CIPHER_CTX *ctx) {
-  aes256_cbc_ctx *cctx = (aes256_cbc_ctx *)EVP_CIPHER_CTX_get_app_data(ctx);
-  EVP_CIPHER_CTX_free(cctx->ctx);
-  delete cctx;
-  return 1;
+  auto *cipher = reinterpret_cast<Factory::FactoryCipher*>(EVP_CIPHER_CTX_get_app_data(ctx));
+  return cipher->Cleanup(ctx);
 }
 
 /* chacha20 mapping*/

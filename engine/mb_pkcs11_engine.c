@@ -409,7 +409,7 @@ static inline int engine_aes256_cbc_init(EVP_CIPHER_CTX *ctx,
 #ifdef PRINT_DEBUG
   printf("[Engine]: engine_aes256_cbc_init called!\n");
 #endif
-  return aes256_cbc_init(ctx, key, iv, enc);
+  return aes256_cbc_init(impl_instance, ctx, key, iv, enc);
 }
 static inline int engine_aes256_cbc_do_cipher(EVP_CIPHER_CTX *ctx,
                                               unsigned char *out,

@@ -39,7 +39,7 @@ int sha384_cleanup(EVP_MD_CTX *ctx);
 size_t sha384_size();
 
 /* aes256 cbc mapping*/
-int aes256_cbc_init(EVP_CIPHER_CTX *ctx, const unsigned char *key,
+int aes256_cbc_init(struct engine_factory_instance* instance, EVP_CIPHER_CTX *ctx, const unsigned char *key,
                     const unsigned char *iv, int enc);
 int aes256_cbc_do_cipher(EVP_CIPHER_CTX *ctx, unsigned char *out,
                          const unsigned char *in, size_t inlen);

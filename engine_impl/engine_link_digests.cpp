@@ -1,50 +1,76 @@
 #include "engine_link.h"
 #include <iostream>
+#include <cstring>
+
+#include "src/digests/sw_digest_sha256.hpp"
+#include "src/engine_factory.hpp"
 
 // can set data with EVP_MD_meth_set_app_datasize
-struct sha256_digest_ctx {
-  SHA256_CTX ctx;
-};
 
 /* sha256 mapping */
-size_t sha256_size() { return sizeof(sha256_digest_ctx); }
+size_t sha256_size() { 
+  return sizeof(Factory::FactoryDigest*); }
 
-int sha256_init(EVP_MD_CTX *ctx) {
-  auto digest_ctx =
-      reinterpret_cast<sha256_digest_ctx *>(EVP_MD_CTX_md_data(ctx));
-  return SHA256_Init(&digest_ctx->ctx);
+int sha256_init(struct engine_factory_instance* instance, EVP_MD_CTX *ctx) {
+  
+  int ok = 0;
+  auto *factory = static_cast<Factory::SoftwareImpl::EngineFactory*>(instance->instance);
+  if (factory != nullptr)
+  {
+    auto factory_digest = factory->GetDigest(NID_sha256);
+    auto *digest = static_cast<Factory::FactoryDigest*>(EVP_MD_CTX_md_data(ctx));
+    auto *dest = std::memmove(digest, factory_digest.get(), sizeof(Factory::FactoryDigest));
+    if (dest != nullptr)
+    {
+      ok = digest->Init(ctx);
+    }
+  }
+  return ok;
 }
 
-int sha256_update(EVP_MD_CTX *ctx, const void *in, size_t len) {
-  auto digest_ctx =
-      reinterpret_cast<sha256_digest_ctx *>(EVP_MD_CTX_md_data(ctx));
-  return SHA256_Update(&digest_ctx->ctx, in, len);
+int sha256_update(EVP_MD_CTX *ctx, const void *in, size_t len) {  
+  auto *digest = reinterpret_cast<Factory::FactoryDigest*>(EVP_MD_CTX_md_data(ctx));
+  return digest->Update(ctx, in, len);
 }
 
 int sha256_final(EVP_MD_CTX *ctx, unsigned char *md) {
-  auto digest_ctx =
-      reinterpret_cast<sha256_digest_ctx *>(EVP_MD_CTX_md_data(ctx));
-  return SHA256_Final(md, &digest_ctx->ctx);
+  auto *digest = reinterpret_cast<Factory::FactoryDigest*>(EVP_MD_CTX_md_data(ctx));
+  return digest->Final(ctx, md);
 }
 
-int sha256_cleanup(EVP_MD_CTX *ctx) { return 1; }
+int sha256_cleanup(EVP_MD_CTX *ctx) { 
+    auto *digest = reinterpret_cast<Factory::FactoryDigest*>(EVP_MD_CTX_md_data(ctx));
+    return digest->Cleanup(ctx);
+}
 
 /* sha384 mapping */
-struct sha384_digest_ctx {};
+size_t sha384_size() { return sizeof(Factory::FactoryDigest*);  }
 
-size_t sha384_size() { return sizeof(sha384_digest_ctx); }
-
-int sha384_init(EVP_MD_CTX *ctx) {
-  return EVP_DigestInit_ex(ctx, EVP_sha3_384(), nullptr);
+int sha384_init(struct engine_factory_instance* instance, EVP_MD_CTX *ctx) {
+    int ok = 0;
+  auto *factory = static_cast<Factory::SoftwareImpl::EngineFactory*>(instance->instance);
+  if (factory != nullptr)
+  {
+    auto factory_digest = factory->GetDigest(NID_sha384);
+    auto *digest = static_cast<Factory::FactoryDigest*>(EVP_MD_CTX_md_data(ctx));
+    auto *dest = std::memmove(digest, factory_digest.get(), sizeof(Factory::FactoryDigest));
+    if (dest != nullptr)
+    {
+      ok = digest->Init(ctx);
+    }
+  }
+  return ok;
 }
 
 int sha384_update(EVP_MD_CTX *ctx, const void *in, size_t len) {
-  return EVP_DigestUpdate(ctx, in, len);
+      auto *digest = reinterpret_cast<Factory::FactoryDigest*>(EVP_MD_CTX_md_data(ctx));
+    return digest->Update(ctx, in, len);
 }
 
 int sha384_final(EVP_MD_CTX *ctx, unsigned char *md) {
-  unsigned int len = 0;
-  return EVP_DigestFinal(ctx, md, &len);
+      auto *digest = reinterpret_cast<Factory::FactoryDigest*>(EVP_MD_CTX_md_data(ctx));
+    return digest->Final(ctx, md);
 }
 
-int sha384_cleanup(EVP_MD_CTX *ctx) { return 1; }
+int sha384_cleanup(EVP_MD_CTX *ctx) {    auto *digest = reinterpret_cast<Factory::FactoryDigest*>(EVP_MD_CTX_md_data(ctx));
+    return digest->Cleanup(ctx);}

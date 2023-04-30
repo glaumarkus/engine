@@ -11,6 +11,8 @@
 static const char *mb_engine_id = "MB_PKCS11_ENGINE";
 static const char *mb_engine_name = "MB.OS custom PKCS11 Engine";
 
+static struct engine_factory_instance* impl_instance = NULL;
+
 RAND_METHOD engine_random_method = {
     engine_rand_set_seed, /* seed */
     engine_rand_bytes,    /* bytes */
@@ -315,7 +317,7 @@ static inline int engine_sha256_init(EVP_MD_CTX *ctx) {
 #ifdef PRINT_DEBUG
   printf("[Engine]: engine_sha256_init called!\n");
 #endif
-  return sha256_init(ctx);
+  return sha256_init(impl_instance, ctx);
 }
 static inline int engine_sha256_update(EVP_MD_CTX *ctx, const void *in,
                                        size_t len) {
@@ -359,7 +361,7 @@ static inline int engine_sha384_init(EVP_MD_CTX *ctx) {
 #ifdef PRINT_DEBUG
   printf("[Engine]: engine_sha384_init called!\n");
 #endif
-  return sha384_init(ctx);
+  return sha384_init(impl_instance, ctx);
 }
 static inline int engine_sha384_update(EVP_MD_CTX *ctx, const void *in,
                                        size_t len) {
@@ -554,7 +556,10 @@ static int engine_init(ENGINE *engine) {
   // int ENGINE_set_cmd_defns(ENGINE * e, const ENGINE_CMD_DEFN *defns);
   /* Set the CMD_Strings flag */
   ENGINE_set_flags(engine, ENGINE_FLAGS_MANUAL_CMD_CTRL);
-  return init();
+  size_t impl_size = 0;
+  get_impl_size(&impl_size);
+  impl_instance = malloc(impl_size);
+  return init(impl_instance);
 }
 
 /* engine finish */
@@ -562,5 +567,7 @@ static int engine_finish(ENGINE *engine) {
 #ifdef PRINT_DEBUG
   printf("[Engine]: engine_finish called\n");
 #endif
-  return finish();
+  int ok = finish(impl_instance);
+  free(impl_instance);
+  return ok;
 }

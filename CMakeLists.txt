@@ -162,8 +162,8 @@ set(ENGINE_IMPL_SRCS
   engine_impl/engine_link_sym_ciphers.cpp 
   engine_impl/engine_link_pkey.cpp
   engine_impl/engine_link_ecdsa.cpp
-  engine_impl/engine_link_ec.cpp
   engine_impl/engine_link_random.cpp
+
   # instances
   engine_impl/src/engine_factory.cpp
   engine_impl/src/digests/sw_digest_sha256.cpp
@@ -179,7 +179,6 @@ add_library(
 target_include_directories(
   ${ENGINE_IMPL_NAME} PRIVATE ${OPENSSL_INCLUDE_DIR}
   ${ENGINE_IMPL_FACTORY}
-  ${ENGINE_IMPL_SRC}
   )
 target_link_libraries(${ENGINE_IMPL_NAME} PRIVATE ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY})
 target_compile_options(${ENGINE_IMPL_NAME} PUBLIC -Wunused-parameter)

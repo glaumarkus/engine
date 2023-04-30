@@ -10,15 +10,29 @@
 extern "C" {
 #endif
 
+/* buffer to pass an instance of the factory interface */
+struct engine_factory_instance
+{
+    void* instance;
+    size_t size;
+};
+
+/* engine startup shutdown */
+void get_impl_size(size_t* size);
+int init(struct engine_factory_instance* instance);
+int finish(struct engine_factory_instance* instance);
+int ctrl_cmd_string(ENGINE *e, int cmd, long i, void *p, void (*f)(void));
+
+
 /* sha256 mapping */
-int sha256_init(EVP_MD_CTX *ctx);
+int sha256_init(struct engine_factory_instance* instance, EVP_MD_CTX *ctx);
 int sha256_update(EVP_MD_CTX *ctx, const void *in, size_t len);
 int sha256_final(EVP_MD_CTX *ctx, unsigned char *md);
 int sha256_cleanup(EVP_MD_CTX *ctx);
 size_t sha256_size();
 
 /* sha384 mapping */
-int sha384_init(EVP_MD_CTX *ctx);
+int sha384_init(struct engine_factory_instance* instance, EVP_MD_CTX *ctx);
 int sha384_update(EVP_MD_CTX *ctx, const void *in, size_t len);
 int sha384_final(EVP_MD_CTX *ctx, unsigned char *md);
 int sha384_cleanup(EVP_MD_CTX *ctx);
@@ -71,11 +85,6 @@ int ecdh_derive_init(EVP_PKEY_CTX *ctx);
 int ecdh_derive(EVP_PKEY_CTX *ctx, unsigned char *key, size_t *keylen);
 int ecdh_set_peer(EC_KEY *other_key);
 int ecdh_get_shared_secret();
-
-/* engine startup shutdown */
-int init();
-int finish();
-int ctrl_cmd_string(ENGINE *e, int cmd, long i, void *p, void (*f)(void));
 
 /* engine random */
 void rand_cleanup();

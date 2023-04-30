@@ -2,11 +2,42 @@
 #include <cstring>
 #include <iostream>
 #include <openssl/engine.h>
+#include "src/engine_factory.hpp"
 
 enum class CmdStrings : int { kInitArgs = 200, kLoadCertCtrl = 201 };
 
-int init() { return 1; }
-int finish() { return 1; }
+void get_impl_size(size_t* size)
+{
+  *size = sizeof(Factory::SoftwareImpl::EngineFactory);
+}
+
+int init(engine_factory_instance* instance) { 
+  int ok = 0;
+  if (instance != nullptr)
+  {
+    auto *factory = new Factory::SoftwareImpl::EngineFactory();
+    instance->instance = static_cast<void*>(factory);
+    instance->size = sizeof(Factory::SoftwareImpl::EngineFactory);
+    ok = 1;
+  }
+  return ok; }
+  
+int finish(engine_factory_instance* instance) {
+  int ok = 0;
+  // remove instance 
+  if (instance->instance != nullptr)
+  {
+    // change pointer
+    auto *factory = static_cast<Factory::SoftwareImpl::EngineFactory*>(instance->instance);
+    // delete
+    delete factory;
+    ok = 1;
+  }
+  else
+  {
+    ok = 1;
+  }
+  return ok; }
 
 int parse_cmd_string(void *p) {
   // reinterpret as const char*

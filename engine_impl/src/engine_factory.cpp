@@ -1,5 +1,6 @@
 #include "engine_factory.hpp"
 #include <openssl/engine.h>
+#include <cstring>
 
 namespace Factory {
 namespace SoftwareImpl {
@@ -25,19 +26,34 @@ int EngineFactory::CtrlCmd(ENGINE *e, int cmd, long i, void *p, void (*f)(void))
     int ok = 0;
     switch (cmd) {
     case ENGINE_CTRL_SET_LOGSTREAM:
+    {
         ok = LoadCertFromString(p);
         break;
+    }
     case ENGINE_CTRL_GET_CMD_FROM_NAME:
+    {
         ok = ParseCmdString(p);
-        break;
+       break;
+    }
     default:
+    {
         ok = ENGINE_R_CTRL_COMMAND_NOT_IMPLEMENTED;
         break;
+    }
     }
 
   return ok;
 }
 
+int EngineFactory::ParseCmdString(void *ptr) noexcept
+{
+    int ok = 0;
+    // check if LOAD_CERT_CTRL is supported
+    if (!std::strcmp(reinterpret_cast<const char*>(ptr), "LOAD_CERT_CTRL")) {
+        ok = 1;
+    }
+    return ok;
+}
 
 int EngineFactory::LoadCertFromString(void *cert_ptr) noexcept
 {

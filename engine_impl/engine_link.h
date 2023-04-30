@@ -53,10 +53,6 @@ size_t chacha20_size();
 EVP_PKEY *load_private_key(const char *keyfile);
 /* public key loader */
 EVP_PKEY *load_public_key(const char *keyfile);
-/* certificate loader */
-int load_certificate(ENGINE *engine, SSL *ssl, STACK_OF(X509_NAME) * ca_dn,
-                     X509 **pcert, EVP_PKEY **pkey, STACK_OF(X509) * *pother,
-                     UI_METHOD *ui_method, void *callback_data);
 
 /* ecdsa mapping */
 int ecdsa_init(EVP_PKEY_CTX *ctx);
@@ -75,28 +71,6 @@ int ecdh_derive_init(EVP_PKEY_CTX *ctx);
 int ecdh_derive(EVP_PKEY_CTX *ctx, unsigned char *key, size_t *keylen);
 int ecdh_set_peer(EC_KEY *other_key);
 int ecdh_get_shared_secret();
-
-/* ec methods */
-int ec_verify_sig(const unsigned char *dgst, int dgst_len, const ECDSA_SIG *sig,
-                  EC_KEY *eckey);
-int ec_verify(int type, const unsigned char *dgst, int dgst_len,
-              const unsigned char *sigbuf, int sig_len, EC_KEY *eckey);
-ECDSA_SIG *ec_sign_sig(const unsigned char *dgst, int dgst_len,
-                       const BIGNUM *in_kinv, const BIGNUM *in_r,
-                       EC_KEY *eckey);
-int ec_sign_setup(EC_KEY *eckey, BN_CTX *ctx_in, BIGNUM **kinvp, BIGNUM **rp);
-int ec_sign(int type, const unsigned char *dgst, int dlen, unsigned char *sig,
-            unsigned int *siglen, const BIGNUM *kinv, const BIGNUM *r,
-            EC_KEY *eckey);
-int ec_copy(EC_KEY *dest, const EC_KEY *src);
-int ec_set_public(EC_KEY *key, const EC_POINT *pub_key);
-int ec_set_private(EC_KEY *key, const BIGNUM *priv_key);
-int ec_set_group(EC_KEY *key, const EC_GROUP *grp);
-void ec_finish(EC_KEY *key);
-int ec_init(EC_KEY *key);
-int ec_keygen(EC_KEY *key);
-int ec_compute_key(unsigned char **psec, size_t *pseclen,
-                   const EC_POINT *pub_key, const EC_KEY *ecdh);
 
 /* engine startup shutdown */
 int init();

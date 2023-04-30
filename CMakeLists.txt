@@ -103,7 +103,7 @@ set(ENGINE_IMPL_FACTORY engine_impl)
 set(ENGINE_IMPL_SRC engine_impl/src)
 
 # add impl tests
-add_executable(cert_test 
+add_executable(loader_test 
   engine_impl/src/asym/sw_cert.hpp
   engine_impl/src/asym/sw_cert.cpp 
   engine_impl/src/asym/sw_pkey.hpp
@@ -113,14 +113,14 @@ add_executable(cert_test
   engine_impl/unit_tests/test_sw_loaders.cpp)
 
 target_link_libraries(
-  cert_test
+  loader_test
   GTest::gtest_main
   ${OPENSSL_CRYPTO_LIBRARY} 
   ${OPENSSL_SSL_LIBRARY}
 )
 
 target_include_directories(
-  cert_test PRIVATE 
+  loader_test PRIVATE 
     ${OPENSSL_INCLUDE_DIR}
     ${ENGINE_IMPL_FACTORY}
     ${ENGINE_IMPL_SRC}
@@ -145,6 +145,29 @@ target_link_libraries(
 
 target_include_directories(
   digest_test PRIVATE 
+    ${OPENSSL_INCLUDE_DIR}
+    ${ENGINE_IMPL_FACTORY}
+    ${ENGINE_IMPL_SRC}
+    )
+
+# add impl tests
+add_executable(ec_test 
+  engine_impl/src/asym/sw_ec.hpp
+  engine_impl/src/asym/sw_ec.cpp
+  engine_impl/src/digests/sw_digest_sha256.cpp
+  engine_impl/src/digests/sw_digest_sha384.cpp
+  engine_impl/unit_tests/test_sw_ec.cpp
+  )
+
+target_link_libraries(
+  ec_test
+  GTest::gtest_main
+  ${OPENSSL_CRYPTO_LIBRARY} 
+  ${OPENSSL_SSL_LIBRARY}
+)
+
+target_include_directories(
+  ec_test PRIVATE 
     ${OPENSSL_INCLUDE_DIR}
     ${ENGINE_IMPL_FACTORY}
     ${ENGINE_IMPL_SRC}

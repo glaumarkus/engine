@@ -49,6 +49,23 @@ public:
    * \return The result of the command.
    */
   virtual int CtrlCmd(ENGINE *e, int cmd, long i, void *p, void (*f)(void)) noexcept = 0;
+
+  /**
+   * Get the default cipher that is registered for the provided nid.
+   *
+   * \param nid The identifer of the requested algorithm.
+   * \return An instance of the cipher algorithm or nullptr on failure.
+   */
+  virtual std::unique_ptr<FactoryCipher> GetCipher(int nid) noexcept = 0;
+
+  
+  /**
+   * Get the default digest that is registered for the provided nid.
+   *
+   * \param nid The identifer of the requested algorithm.
+   * \return An instance of the digest algorithm or nullptr on failure.
+   */
+  virtual std::unique_ptr<FactoryDigest> GetDigest(int nid) noexcept = 0;
 };
 
 } // namespace Factory

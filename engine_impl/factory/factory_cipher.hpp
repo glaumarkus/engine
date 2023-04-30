@@ -71,8 +71,6 @@ public:
                    void *ptr) noexcept = 0;
 
 
-  virtual std::unique_ptr<FactoryCipher> GetCipher(int nid) noexcept = 0;
-  vritual std::unique_ptr<FactoryDigest> GetDigest(int nid) noexcept = 0;
 };
 
 } // namespace Factory

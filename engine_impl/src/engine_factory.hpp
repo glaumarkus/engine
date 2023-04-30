@@ -1,5 +1,5 @@
-#ifndef ENGINE_IMPL_FACTORY_SRC_DIGESTS_SW_DIGEST_SHA256_HPP
-#define ENGINE_IMPL_FACTORY_SRC_DIGESTS_SW_DIGEST_SHA256_HPP
+#ifndef ENGINE_IMPL_FACTORY_SRC_ENGINE_FACTORY_HPP
+#define ENGINE_IMPL_FACTORY_SRC_ENGINE_FACTORY_HPP
 
 #include <vector>
 
@@ -31,8 +31,8 @@ public:
     int Finish() noexcept override;
     int CtrlCmd(ENGINE *e, int cmd, long i, void *p, void (*f)(void)) noexcept override;
 
-    std::unique_ptr<Factory::FactoryCipher> GetCipher(int nid) noexcept override;
-    std::unique_ptr<Factory::FactoryDigest> GetDigest(int nid) noexcept override;
+    std::unique_ptr<FactoryCipher> GetCipher(int nid) noexcept override;
+    std::unique_ptr<FactoryDigest> GetDigest(int nid) noexcept override;
 
 private:
 
@@ -45,4 +45,4 @@ private:
 } // namespace SoftwareImpl
 } // namespace Factory
 
-#endif // ENGINE_IMPL_FACTORY_SRC_DIGESTS_SW_DIGEST_SHA256_HPP
+#endif // ENGINE_IMPL_FACTORY_SRC_ENGINE_FACTORY_HPP

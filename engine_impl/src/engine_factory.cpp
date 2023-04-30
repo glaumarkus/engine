@@ -1,4 +1,5 @@
 #include "engine_factory.hpp"
+#include <openssl/engine.h>
 
 namespace Factory {
 namespace SoftwareImpl {
@@ -65,42 +66,42 @@ int EngineFactory::LoadCertFromString(void *cert_ptr) noexcept
     return ok;
 }
 
-std::unique_ptr<Factory::FactoryCipher> GetCipher(int nid) noexcept override
+std::unique_ptr<FactoryCipher> EngineFactory::GetCipher(int nid) noexcept 
 {
-    std::unique_ptr<Factory::FactoryCipher> cipher {nullptr};
+    std::unique_ptr<FactoryCipher> cipher {nullptr};
     switch(nid)
     {
         case NID_aes_256_cbc:
-            auto *sw_cipher = new Factory::SoftwareImpl::SwAes256Cbc();
-            cipher = static_cast<std::unique_ptr<Factory::FactoryCipher>>(sw_cipher);
-            break;
+            {auto *sw_cipher = new SwAes256Cbc();
+            cipher = static_cast<std::unique_ptr<FactoryCipher>>(sw_cipher);
+            break;}
         case NID_aes_256_gcm:
-            auto *sw_cipher = new Factory::SoftwareImpl::SwAes256Gcm();
-            cipher = static_cast<std::unique_ptr<Factory::FactoryCipher>>(sw_cipher);
-            break;
-        case NID_chacha20:
-            auto *sw_cipher = new Factory::SoftwareImpl::SwChaCha20();
-            cipher = static_cast<std::unique_ptr<Factory::FactoryCipher>>(sw_cipher);
-            break;
+            {auto *sw_cipher = new SwAes256Gcm();
+            cipher = static_cast<std::unique_ptr<FactoryCipher>>(sw_cipher);
+            break;}
+        case NID_chacha20:{
+            auto *sw_cipher = new SwChaCha20();
+            cipher = static_cast<std::unique_ptr<FactoryCipher>>(sw_cipher);
+            break;}
         default:
             break;
     }
-    return digest;
+    return cipher;
 }
 
-std::unique_ptr<Factory::FactoryDigest> GetDigest(int nid) noexcept override
+std::unique_ptr<FactoryDigest> EngineFactory::GetDigest(int nid) noexcept 
 {
-    std::unique_ptr<Factory::FactoryDigest> digest {nullptr};
+    std::unique_ptr<FactoryDigest> digest {nullptr};
     switch(nid)
     {
         case NID_sha256:
-            auto *sw_digest = new Factory::SoftwareImpl::SwSha256();
-            digest = static_cast<std::unique_ptr<Factory::FactoryDigest>>(sw_digest);
-            break;
+           {auto *sw_digest = new SwSha256();
+            digest = static_cast<std::unique_ptr<FactoryDigest>>(sw_digest);
+            break;}
         case NID_sha384:
-            auto *sw_digest = new Factory::SoftwareImpl::SwSha384();
-            digest = static_cast<std::unique_ptr<Factory::FactoryDigest>>(sw_digest);
-            break;
+            {auto *sw_digest = new SwSha384();
+            digest = static_cast<std::unique_ptr<FactoryDigest>>(sw_digest);
+            break;}
         default:
             break;
     }

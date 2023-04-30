@@ -15,7 +15,9 @@ TEST(Test, EngineLoaded) {
 TEST(Test, EngineInit) {
   ASSERT_NE(engine, nullptr);
   // initialize the engine
-  EXPECT_EQ(1, ENGINE_init(engine));
+  EXPECT_TRUE(ENGINE_init(engine));
+  // finalize the engine
+  EXPECT_TRUE(ENGINE_finish(engine));
 }
 
 TEST(Test, ECDHEngine) {

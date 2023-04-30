@@ -15,6 +15,9 @@ set(ENGINE_SRCS
   engine/mb_pkcs11_engine.c 
 )
 
+include(GoogleTest)
+
+
 # Set the name of the test
 set(TEST_NAME pkcs11test)
 
@@ -24,80 +27,9 @@ set(OPENSSL_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/deps/openssl-1.1.1g/include
 set(OPENSSL_CRYPTO_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/deps/openssl-1.1.1g/libcrypto.so.1.1")
 set(OPENSSL_SSL_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/deps/openssl-1.1.1g/libssl.so")
 
-# set(OPENSSL_CRYPTO_INCLUDE_DIR "/home/glaum/curl/openssl-1.1.1b/crypto")
-# set(OPENSSL_CRYPTO_LIBRARY "/home/glaum/curl/openssl-1.1.1b/libcrypto.so.1.1")
-# set(OPENSSL_SSL_LIBRARY "/home/glaum/curl/openssl-1.1.1b/libssl.so")
-
 message("OpenSSL_INCLUDE_DIRS: ${OPENSSL_INCLUDE_DIR}")
 message("OpenSSL_CRYPTO_LIB: ${OPENSSL_CRYPTO_LIBRARY}")
 message("OpenSSL_SSL_LIB: ${OPENSSL_SSL_LIBRARY}")
-
-
-# Create a shared library for engine implementation
-set(ENGINE_IMPL_NAME mbengineimpl)
-
-# Set the source files for your engine
-set(ENGINE_IMPL_SRCS 
-  engine_impl/engine_link.cpp 
-  engine_impl/engine_link_digests.cpp 
-  engine_impl/engine_link_sym_ciphers.cpp 
-  engine_impl/engine_link_pkey.cpp
-  engine_impl/engine_link_ecdsa.cpp
-  engine_impl/engine_link_ec.cpp
-  engine_impl/engine_link_random.cpp
-)
-
-add_library(${ENGINE_IMPL_NAME} SHARED ${ENGINE_IMPL_SRCS})
-target_include_directories(${ENGINE_IMPL_NAME} PRIVATE ${OPENSSL_INCLUDE_DIR})
-target_link_libraries(${ENGINE_IMPL_NAME} PRIVATE ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY})
-target_compile_options(${ENGINE_IMPL_NAME} PUBLIC -Wunused-parameter)
-
-
-# Create a shared library for your engine
-add_library(${ENGINE_NAME} SHARED ${ENGINE_SRCS})
-
-# Surpress warnings
-target_compile_options(${ENGINE_NAME} PUBLIC -Wdeprecated-declarations -Wimplicit-function-declaration)
-
-# Set the version number of your engine
-set_target_properties(${ENGINE_NAME} PROPERTIES VERSION ${ENGINE_VERSION})
-
-# Link against OpenSSL
-target_include_directories(${ENGINE_NAME} PRIVATE ${OPENSSL_INCLUDE_DIR} ${OPENSSL_CRYPTO_INCLUDE_DIR} engine_impl)
-target_link_libraries(${ENGINE_NAME} PRIVATE ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY} ${ENGINE_IMPL_NAME})
-
-# openssl tests
-
-include(FetchContent)
-FetchContent_Declare(
-  googletest
-  URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
-)
-# For Windows: Prevent overriding the parent project's compiler/linker settings
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
-
-enable_testing()
-
-add_executable(engine_test test.cpp)
-target_link_libraries(
-    engine_test
-    GTest::gtest_main
-    ${ENGINE_NAME} 
-    ${ENGINE_IMPL_NAME} 
-    ${OPENSSL_CRYPTO_LIBRARY} 
-    ${OPENSSL_SSL_LIBRARY}
-)
-target_include_directories(
-    engine_test PRIVATE 
-    ${CURL_INCLUDE} 
-    ${OPENSSL_INCLUDE_DIR})
-
-# add factory 
-#add_library(
-#  engine_factory
-#)
-#target_include_directories(engine_factory PUBLIC engine_impl/factory/*.hpp)
 
 set(ENGINE_IMPL_FACTORY engine_impl)
 set(ENGINE_IMPL_SRC engine_impl/src)
@@ -200,25 +132,98 @@ target_include_directories(
     )
 
 
-set(CURL_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/deps/curl-7.78.0/lib/.libs/libcurl.so")
-set(CURL_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/deps/curl-7.78.0/include")
+# set(CURL_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/deps/curl-7.78.0/lib/.libs/libcurl.so")
+# set(CURL_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/deps/curl-7.78.0/include")
 
-add_executable(curl_test curl_test.cpp)
+# add_executable(curl_test curl_test.cpp)
+# target_link_libraries(
+#   curl_test
+#   GTest::gtest_main
+#   ${CURL_LIBRARY}
+#   ${OPENSSL_CRYPTO_LIBRARY} 
+#   ${OPENSSL_SSL_LIBRARY}
+#   ${ENGINE_NAME}  
+# )
+# target_include_directories(
+#   curl_test PRIVATE
+#   ${CURL_INCLUDE} 
+#   ${OPENSSL_INCLUDE_DIR}
+# )
+
+
+# Create a shared library for engine implementation
+set(ENGINE_IMPL_NAME mbengineimpl)
+
+# Set the source files for your engine
+set(ENGINE_IMPL_SRCS 
+  # mapping functions
+  engine_impl/engine_link.cpp 
+  engine_impl/engine_link_digests.cpp 
+  engine_impl/engine_link_sym_ciphers.cpp 
+  engine_impl/engine_link_pkey.cpp
+  engine_impl/engine_link_ecdsa.cpp
+  engine_impl/engine_link_ec.cpp
+  engine_impl/engine_link_random.cpp
+  # instances
+  engine_impl/src/engine_factory.cpp
+  engine_impl/src/digests/sw_digest_sha256.cpp
+  engine_impl/src/digests/sw_digest_sha384.cpp
+  engine_impl/src/ciphers/sw_cipher_aes256cbc.cpp
+  engine_impl/src/ciphers/sw_cipher_aes256gcm.cpp
+  engine_impl/src/ciphers/sw_cipher_chacha20.cpp
+)
+
+add_library(
+  ${ENGINE_IMPL_NAME} SHARED ${ENGINE_IMPL_SRCS})
+
+target_include_directories(
+  ${ENGINE_IMPL_NAME} PRIVATE ${OPENSSL_INCLUDE_DIR}
+  ${ENGINE_IMPL_FACTORY}
+  ${ENGINE_IMPL_SRC}
+  )
+target_link_libraries(${ENGINE_IMPL_NAME} PRIVATE ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY})
+target_compile_options(${ENGINE_IMPL_NAME} PUBLIC -Wunused-parameter)
+
+
+# Create a shared library for your engine
+add_library(${ENGINE_NAME} SHARED ${ENGINE_SRCS})
+
+# Surpress warnings
+target_compile_options(${ENGINE_NAME} PUBLIC -Wdeprecated-declarations -Wimplicit-function-declaration)
+
+# Set the version number of your engine
+set_target_properties(${ENGINE_NAME} PROPERTIES VERSION ${ENGINE_VERSION})
+
+# Link against OpenSSL
+target_include_directories(${ENGINE_NAME} PRIVATE ${OPENSSL_INCLUDE_DIR} ${OPENSSL_CRYPTO_INCLUDE_DIR} engine_impl)
+target_link_libraries(${ENGINE_NAME} PRIVATE ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY} ${ENGINE_IMPL_NAME})
+
+# openssl tests
+
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+)
+# For Windows: Prevent overriding the parent project's compiler/linker settings
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+
+enable_testing()
+
+add_executable(engine_test test.cpp)
 target_link_libraries(
-  curl_test
-  GTest::gtest_main
-  ${CURL_LIBRARY}
-  ${OPENSSL_CRYPTO_LIBRARY} 
-  ${OPENSSL_SSL_LIBRARY}
-  ${ENGINE_NAME}  
+    engine_test
+    GTest::gtest_main
+    ${ENGINE_NAME} 
+    ${ENGINE_IMPL_NAME} 
+    ${OPENSSL_CRYPTO_LIBRARY} 
+    ${OPENSSL_SSL_LIBRARY}
 )
 target_include_directories(
-  curl_test PRIVATE
-  ${CURL_INCLUDE} 
-  ${OPENSSL_INCLUDE_DIR}
-)
+    engine_test PRIVATE 
+    ${CURL_INCLUDE} 
+    ${OPENSSL_INCLUDE_DIR})
 
-include(GoogleTest)
 gtest_discover_tests(engine_test)
-gtest_discover_tests(curl_test)
-
+# gtest_discover_tests(curl_test)

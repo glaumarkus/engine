@@ -47,7 +47,7 @@ int aes256_cbc_cleanup(EVP_CIPHER_CTX *ctx);
 size_t aes256_cbc_size();
 
 /* aes256 gcm mapping*/
-int aes256_gcm_init(EVP_CIPHER_CTX *ctx, const unsigned char *key,
+int aes256_gcm_init(struct engine_factory_instance* instance, EVP_CIPHER_CTX *ctx, const unsigned char *key,
                     const unsigned char *iv, int enc);
 int aes256_gcm_do_cipher(EVP_CIPHER_CTX *ctx, unsigned char *out,
                          const unsigned char *in, size_t inlen);
@@ -56,7 +56,7 @@ int aes256_gcm_ctrl(EVP_CIPHER_CTX *ctx, int type, int arg, void *ptr);
 size_t aes256_gcm_size();
 
 /* chacha20 mapping*/
-int chacha20_init(EVP_CIPHER_CTX *ctx, const unsigned char *key,
+int chacha20_init(struct engine_factory_instance* instance, EVP_CIPHER_CTX *ctx, const unsigned char *key,
                   const unsigned char *iv, int enc);
 int chacha20_do_cipher(EVP_CIPHER_CTX *ctx, unsigned char *out,
                        const unsigned char *in, size_t inlen);

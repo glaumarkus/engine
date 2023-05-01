@@ -462,7 +462,7 @@ static inline int engine_aes256_gcm_init(EVP_CIPHER_CTX *ctx,
 #ifdef PRINT_DEBUG
   printf("[Engine]: engine_aes256_gcm_init called!\n");
 #endif
-  return aes256_gcm_init(ctx, key, iv, enc);
+  return aes256_gcm_init(impl_instance, ctx, key, iv, enc);
 }
 static inline int engine_aes256_gcm_do_cipher(EVP_CIPHER_CTX *ctx,
                                               unsigned char *out,
@@ -503,7 +503,7 @@ static inline int engine_chacha20_init(EVP_CIPHER_CTX *ctx,
 #ifdef PRINT_DEBUG
   printf("[Engine]: engine_chacha20_init called!\n");
 #endif
-  return chacha20_init(ctx, key, iv, enc);
+  return chacha20_init(impl_instance, ctx, key, iv, enc);
 }
 static inline int engine_chacha20_do_cipher(EVP_CIPHER_CTX *ctx,
                                             unsigned char *out,

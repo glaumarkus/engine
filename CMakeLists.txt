@@ -145,6 +145,12 @@ engine_impl/src/ciphers/sw_cipher_chacha20.hpp
 engine_impl/src/ciphers/sw_cipher_chacha20.cpp   
 engine_impl/src/asym/sw_ec.hpp
 engine_impl/src/asym/sw_ec.cpp
+engine_impl/src/asym/sw_pkey.hpp
+engine_impl/src/asym/sw_pkey.cpp
+engine_impl/src/asym/sw_pubkey.hpp
+engine_impl/src/asym/sw_pubkey.cpp
+engine_impl/src/asym/sw_cert.hpp
+engine_impl/src/asym/sw_cert.cpp
 engine_impl/src/engine_factory.hpp
 engine_impl/src/engine_factory.cpp
 engine_impl/unit_tests/test_factory.cpp

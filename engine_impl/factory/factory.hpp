@@ -78,7 +78,18 @@ public:
    */
   virtual std::unique_ptr<FactoryEC> GetEC(int nid) noexcept = 0;
 
+  /**
+   * Get an instance of a private keyloader.
+   *
+   * \return An instance of the keyloader or nullptr on failure.
+   */
   virtual std::unique_ptr<FactoryPrivKey> GetPrivateKeyLoader() noexcept = 0;
+
+  /**
+   * Get an instance of a public keyloader.
+   *
+   * \return An instance of the keyloader or nullptr on failure.
+   */
   virtual std::unique_ptr<FactoryPubKey> GetPublicKeyLoader() noexcept = 0;
 };
 

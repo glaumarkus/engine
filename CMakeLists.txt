@@ -195,7 +195,7 @@ set(ENGINE_IMPL_NAME mbengineimpl)
 # Set the source files for your engine
 set(ENGINE_IMPL_SRCS 
   # mapping functions
-  engine_impl/engine_link.cpp 
+  engine_impl/engine_link_ctrl.cpp 
   engine_impl/engine_link_digests.cpp 
   engine_impl/engine_link_sym_ciphers.cpp 
   engine_impl/engine_link_pkey.cpp

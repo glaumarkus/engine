@@ -170,25 +170,13 @@ static int engine_pkey_selector(ENGINE *e, EVP_PKEY_METHOD **method,
   return ok;
 }
 
-static inline int engine_ec_derive_init(EVP_PKEY_CTX *ctx) {
-#ifdef PRINT_DEBUG
-  printf("[Engine]: engine_ec_derive_init called!\n");
-#endif
-  return ecdh_derive_init(ctx);
-}
-static inline int engine_ec_derive(EVP_PKEY_CTX *ctx, unsigned char *key,
-                                   size_t *keylen) {
-#ifdef PRINT_DEBUG
-  printf("[Engine]: engine_ec_derive called!\n");
-#endif
-  return ecdh_derive(ctx, key, keylen);
-}
+
 
 /* pkey method */
 static EVP_PKEY_METHOD *engine_ec_method = NULL;
 static EVP_PKEY_METHOD *init_ec_method() {
 #ifdef PRINT_DEBUG
-  printf("[Engine]: init_ecdsa_method called!\n");
+  printf("[Engine]: init_ec_method called!\n");
 #endif
   if (engine_ec_method == NULL) {
     engine_ec_method =
@@ -197,7 +185,7 @@ static EVP_PKEY_METHOD *init_ec_method() {
     EVP_PKEY_meth_set_cleanup(engine_ec_method, engine_ec_cleanup);
     EVP_PKEY_meth_set_ctrl(engine_ec_method, engine_ec_ctrl,
                            engine_ec_ctrl_str);
-    // support ECDSA
+    // support ec
     EVP_PKEY_meth_set_digest_custom(engine_ec_method, engine_ec_digest_custom);
     EVP_PKEY_meth_set_signctx(engine_ec_method, engine_ec_signctx_init,
                               engine_ec_signctx);
@@ -213,31 +201,46 @@ static EVP_PKEY_METHOD *init_ec_method() {
   return engine_ec_method;
 };
 
-/*
-ToDo
-*/
-static inline int engine_ec_keygen_init(EVP_PKEY_CTX *ctx) {
-  return 0;
+static inline int engine_ec_derive_init(EVP_PKEY_CTX *ctx) {
+#ifdef PRINT_DEBUG
+  printf("[Engine]: engine_ec_derive_init called!\n");
+#endif
+  return ec_derive_init(ctx);
 }
-/*
-ToDo
-*/
+static inline int engine_ec_derive(EVP_PKEY_CTX *ctx, unsigned char *key,
+                                   size_t *keylen) {
+#ifdef PRINT_DEBUG
+  printf("[Engine]: engine_ec_derive called!\n");
+#endif
+  return ec_derive(ctx, key, keylen);
+}
+
+static inline int engine_ec_keygen_init(EVP_PKEY_CTX *ctx) {
+#ifdef PRINT_DEBUG
+  printf("[Engine]: engine_ec_cleanup called!\n");
+#endif
+  return ec_keygen_init(ctx);
+}
+
 static inline int engine_ec_keygen(EVP_PKEY_CTX *ctx, EVP_PKEY *pkey)
 {
-  return 0;
+#ifdef PRINT_DEBUG
+  printf("[Engine]: engine_ec_cleanup called!\n");
+#endif
+  return ec_keygen(ctx, pkey);
 }
 
 static inline int engine_ec_init(EVP_PKEY_CTX *ctx) {
 #ifdef PRINT_DEBUG
   printf("[Engine]: engine_ec_cleanup called!\n");
 #endif
-  return ecdsa_init(impl_instance, ctx);
+  return ec_init(impl_instance, ctx);
 }
 static inline void engine_ec_cleanup(EVP_PKEY_CTX *ctx) {
 #ifdef PRINT_DEBUG
   printf("[Engine]: engine_ec_cleanup called!\n");
 #endif
-  ecdsa_cleanup(ctx);
+  ec_cleanup(ctx);
 }
 
 static inline int engine_ec_ctrl(EVP_PKEY_CTX *ctx, int type, int p1,
@@ -245,7 +248,7 @@ static inline int engine_ec_ctrl(EVP_PKEY_CTX *ctx, int type, int p1,
 #ifdef PRINT_DEBUG
   printf("[Engine]: engine_ec_ctrl called!\n");
 #endif
-  return ecdsa_ctrl(ctx, type, p1, p2);
+  return ec_ctrl(ctx, type, p1, p2);
 }
 
 static inline int engine_ec_ctrl_str(EVP_PKEY_CTX *ctx, const char *type,
@@ -260,14 +263,14 @@ static inline int engine_ec_digest_custom(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx) {
 #ifdef PRINT_DEBUG
   printf("[Engine]: engine_ec_digest_custom called!\n");
 #endif
-  return ecdsa_custom_digest(ctx, mctx);
+  return ec_custom_digest(ctx, mctx);
 }
 
 static inline int engine_ec_signctx_init(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx) {
 #ifdef PRINT_DEBUG
   printf("[Engine]: engine_signctx_init called!\n");
 #endif
-  return ecdsa_signctx_init(ctx, mctx);
+  return ec_signctx_init(ctx, mctx);
 }
 
 static inline int engine_ec_signctx(EVP_PKEY_CTX *ctx, unsigned char *sig,
@@ -275,7 +278,7 @@ static inline int engine_ec_signctx(EVP_PKEY_CTX *ctx, unsigned char *sig,
 #ifdef PRINT_DEBUG
   printf("[Engine]: engine_signctx called!\n");
 #endif
-  return ecdsa_signctx(ctx, sig, siglen, mctx);
+  return ec_signctx(ctx, sig, siglen, mctx);
 }
 
 static inline int engine_ec_verifyctx_init(EVP_PKEY_CTX *ctx,
@@ -283,7 +286,7 @@ static inline int engine_ec_verifyctx_init(EVP_PKEY_CTX *ctx,
 #ifdef PRINT_DEBUG
   printf("[Engine]: engine_signctx called!\n");
 #endif
-  return ecdsa_verifyctx_init(ctx, mctx);
+  return ec_verifyctx_init(ctx, mctx);
 }
 
 static inline int engine_ec_verifyctx(EVP_PKEY_CTX *ctx,
@@ -292,7 +295,7 @@ static inline int engine_ec_verifyctx(EVP_PKEY_CTX *ctx,
 #ifdef PRINT_DEBUG
   printf("[Engine]: engine_signctx called!\n");
 #endif
-  return ecdsa_verifyctx(ctx, sig, siglen, mctx);
+  return ec_verifyctx(ctx, sig, siglen, mctx);
 }
 
 /* sha256 method */

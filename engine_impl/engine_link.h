@@ -68,23 +68,29 @@ EVP_PKEY *load_private_key(const char *keyfile);
 /* public key loader */
 EVP_PKEY *load_public_key(const char *keyfile);
 
-/* ecdsa mapping */
-int ecdsa_init(struct engine_factory_instance* instance, EVP_PKEY_CTX *ctx);
-int ecdsa_cleanup(EVP_PKEY_CTX *ctx);
-int ecdsa_signctx_init(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx);
-int ecdsa_signctx(EVP_PKEY_CTX *ctx, unsigned char *sig, size_t *siglen,
-                  EVP_MD_CTX *mctx);
-int ecdsa_verifyctx_init(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx);
-int ecdsa_verifyctx(EVP_PKEY_CTX *ctx, const unsigned char *sig, int siglen,
-                    EVP_MD_CTX *mctx);
-int ecdsa_custom_digest(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx);
-int ecdsa_ctrl(EVP_PKEY_CTX *ctx, int type, int p1, void *p2);
 
-/* ecdh mapping */
-int ecdh_derive_init(EVP_PKEY_CTX *ctx);
-int ecdh_derive(EVP_PKEY_CTX *ctx, unsigned char *key, size_t *keylen);
-int ecdh_set_peer(EC_KEY *other_key);
-int ecdh_get_shared_secret();
+/* ec functions */
+int ec_init(struct engine_factory_instance* instance, EVP_PKEY_CTX *ctx);
+int ec_cleanup(EVP_PKEY_CTX *ctx);
+int ec_ctrl(EVP_PKEY_CTX *ctx, int type, int p1, void *p2);
+
+/* ecdsa functions */
+int ec_signctx_init(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx);
+int ec_signctx(EVP_PKEY_CTX *ctx, unsigned char *sig, size_t *siglen,
+                  EVP_MD_CTX *mctx);
+int ec_verifyctx_init(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx);
+int ec_verifyctx(EVP_PKEY_CTX *ctx, const unsigned char *sig, int siglen,
+                    EVP_MD_CTX *mctx);
+int ec_custom_digest(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx);
+
+/* ecdh functions */
+int ec_derive_init(EVP_PKEY_CTX *ctx);
+int ec_derive(EVP_PKEY_CTX *ctx, unsigned char *key, size_t *keylen);
+
+/* ecdhe functions */
+int ec_keygen_init(EVP_PKEY_CTX *ctx);
+int ec_keygen(EVP_PKEY_CTX *ctx, EVP_PKEY *pkey);
+
 
 /* engine random */
 void rand_cleanup();

@@ -193,7 +193,7 @@ set(ENGINE_IMPL_SRCS
   engine_impl/engine_link_digests.cpp 
   engine_impl/engine_link_sym_ciphers.cpp 
   engine_impl/engine_link_pkey.cpp
-  engine_impl/engine_link_ecdsa.cpp
+  engine_impl/engine_link_ec.cpp
   engine_impl/engine_link_random.cpp
 
   # instances

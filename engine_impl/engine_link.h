@@ -69,7 +69,7 @@ EVP_PKEY *load_private_key(const char *keyfile);
 EVP_PKEY *load_public_key(const char *keyfile);
 
 /* ecdsa mapping */
-int ecdsa_init(EVP_PKEY_CTX *ctx);
+int ecdsa_init(struct engine_factory_instance* instance, EVP_PKEY_CTX *ctx);
 int ecdsa_cleanup(EVP_PKEY_CTX *ctx);
 int ecdsa_signctx_init(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx);
 int ecdsa_signctx(EVP_PKEY_CTX *ctx, unsigned char *sig, size_t *siglen,

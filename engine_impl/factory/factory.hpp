@@ -6,6 +6,7 @@
 #include <memory>
 #include <factory/factory_cipher.hpp>
 #include <factory/factory_digest.hpp>
+#include <factory/factory_ec.hpp>
 
 
 namespace Factory {
@@ -13,7 +14,7 @@ namespace Factory {
 /**
  * Abstract class defining a factory interface for OpenSSL engines.
  */
-class Factory {
+class EngineFactory {
 public:
 
   /**
@@ -66,6 +67,14 @@ public:
    * \return An instance of the digest algorithm or nullptr on failure.
    */
   virtual std::unique_ptr<FactoryDigest> GetDigest(int nid) noexcept = 0;
+
+  /**
+   * Get an instance of the specified curve that is registered for the provided nid.
+   *
+   * \param nid The identifer of the requested curve.
+   * \return An instance of the EC algorithm or nullptr on failure.
+   */
+  virtual std::unique_ptr<FactoryEC> GetEC(int nid) noexcept = 0;
 };
 
 } // namespace Factory

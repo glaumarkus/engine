@@ -231,7 +231,7 @@ static inline int engine_ec_init(EVP_PKEY_CTX *ctx) {
 #ifdef PRINT_DEBUG
   printf("[Engine]: engine_ec_cleanup called!\n");
 #endif
-  return ecdsa_init(ctx);
+  return ecdsa_init(impl_instance, ctx);
 }
 static inline void engine_ec_cleanup(EVP_PKEY_CTX *ctx) {
 #ifdef PRINT_DEBUG

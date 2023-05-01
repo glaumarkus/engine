@@ -122,6 +122,10 @@ static inline void engine_ec_cleanup(EVP_PKEY_CTX *ctx);
 static inline int engine_ec_keygen_init(EVP_PKEY_CTX *ctx);
 static inline int engine_ec_keygen(EVP_PKEY_CTX *ctx, EVP_PKEY *pkey);
 
+static inline int engine_ec_derive_init(EVP_PKEY_CTX *ctx);
+static inline int engine_ec_derive(EVP_PKEY_CTX *ctx, unsigned char *key,
+                                   size_t *keylen);
+
 static EVP_PKEY_METHOD *init_ec_method();
 
 #endif /* MB_PKCS11_ENGINE_H_ */

@@ -2,6 +2,8 @@
 #include <string>
 #include <vector>
 
+#include "src/engine_factory.hpp"
+
 // can be retrieved with EVP_PKEY_CTX_set_data EVP_PKEY_CTX_get_data
 struct ecdsa_mapping {
   EC_KEY *ec_key;
@@ -14,20 +16,30 @@ struct ecdsa_mapping {
 static ecdsa_mapping *ecdsa_ctx = nullptr;
 
 /* ecdsa mapping */
-int ecdsa_init(EVP_PKEY_CTX *ctx) {
-  ecdsa_ctx = new ecdsa_mapping;
-  return 1;
+int ecdsa_init(engine_factory_instance* instance, EVP_PKEY_CTX *ctx) {
+
+  int ok = 0;
+  auto *factory = static_cast<Factory::SoftwareImpl::EngineFactory*>(instance->instance);
+  if (factory != nullptr)
+  {
+    auto factory_ec = factory->GetEC(NID_chacha20);
+    auto *ec = static_cast<Factory::FactoryEC*>(factory_ec.release());
+    EVP_PKEY_CTX_set_app_data(ctx, ec);
+    if (ec != nullptr)
+    {
+      ok = ec->Init(ctx);
+    }
+  }
+  return ok;
 }
 
 int ecdsa_cleanup(EVP_PKEY_CTX *ctx) {
-  delete ecdsa_ctx;
-  return 1;
+  auto *ec = reinterpret_cast<Factory::FactoryEC*>(EVP_PKEY_CTX_get_app_data(ctx));
+  return ec->Cleanup(ctx);
 }
 
 int ecdsa_signctx_init(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx) {
-  if (ecdsa_ctx == nullptr) {
-    ecdsa_init(ctx);
-  }
+
 
   // set operation
   ecdsa_ctx->type = 1;
@@ -42,9 +54,6 @@ int ecdsa_signctx_init(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx) {
 }
 
 int ecdsa_verifyctx_init(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx) {
-  if (ecdsa_ctx == nullptr) {
-    ecdsa_init(ctx);
-  }
 
   // set operation
   ecdsa_ctx->type = 0;

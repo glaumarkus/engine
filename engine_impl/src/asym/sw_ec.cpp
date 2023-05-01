@@ -6,6 +6,8 @@
 namespace Factory {
 namespace SoftwareImpl {
 
+SwEc::SwEc(int nid) : nid_(nid) {}
+
 int SwEc::Init(EVP_PKEY_CTX *ctx) noexcept { return 1; }
 
 int SwEc::Cleanup(EVP_PKEY_CTX *ctx) noexcept {
@@ -101,14 +103,53 @@ int SwEc::Verify(EVP_PKEY_CTX *ctx, const unsigned char *sig, int siglen,
   return ok;
 }
 
-int SwEc::ECDSADigestUpdate(EVP_MD_CTX *ctx, const void *data, size_t count) {
-  int ok = 0;
-
-  // find the digest type
+int SwEc::FindDigest(EVP_MD_CTX *ctx) noexcept
+{
+ // find the digest type
   const EVP_MD *type = EVP_MD_CTX_md(ctx);
 
   // get NID from type
   int nid = EVP_MD_type(type);
+
+  return nid;
+}
+
+int SwEc::DoDigest(EVP_MD_CTX *ctx, FactoryDigest* digest, int nid, const void *data, size_t count) noexcept
+{
+  int ok = 0;
+  // check if implementation has been found and run through digest process
+  if (digest != nullptr) {
+    ok = digest->Init(ctx);
+  }
+
+  if (ok) {
+    ok = digest->Update(ctx, data, count);
+  }
+
+  if (ok) {
+    ok = digest->Final(ctx, hash_);
+  }
+
+  // free context
+  EVP_MD_CTX_free(ctx);
+
+  if (ok) {
+
+    // get digest size
+    hash_size_ = EVP_MD_size(EVP_get_digestbynid(nid));
+
+    // get ecdsa signature if sign
+    if (sign_) {
+      sig_ = ECDSA_do_sign(hash_, hash_size_, key_);
+    }
+  }
+
+  return ok;
+}
+
+int SwEc::ECDSADigestUpdate(EVP_MD_CTX *ctx, const void *data, size_t count) noexcept {
+
+  int nid = FindDigest(ctx);
 
   // init digest
   EVP_MD_CTX *ctx_f = EVP_MD_CTX_create();
@@ -132,34 +173,7 @@ int SwEc::ECDSADigestUpdate(EVP_MD_CTX *ctx, const void *data, size_t count) {
     break;
   }
 
-  // check if implementation has been found and run through digest process
-  if (digest != nullptr) {
-    ok = digest->Init(ctx_f);
-  }
-
-  if (ok) {
-    ok = digest->Update(ctx_f, data, count);
-  }
-
-  if (ok) {
-    ok = digest->Final(ctx_f, hash_);
-  }
-
-  // free context
-  EVP_MD_CTX_free(ctx_f);
-
-  if (ok) {
-
-    // get digest size
-    hash_size_ = EVP_MD_size(EVP_get_digestbynid(nid));
-
-    // get ecdsa signature if sign
-    if (sign_) {
-      sig_ = ECDSA_do_sign(hash_, hash_size_, key_);
-    }
-  }
-
-  return ok;
+  return DoDigest(ctx_f, digest.get(), nid, data, count);
 }
 
 int SwEc::CustomDigest(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx) noexcept {
@@ -191,13 +205,14 @@ int SwEc::DeriveInit(EVP_PKEY_CTX *ctx) noexcept {
 
 int SwEc::Derive(EVP_PKEY_CTX *ctx, unsigned char *key,
                  size_t *keylen) noexcept {
+  
   return EVP_PKEY_derive(ctx_, key, keylen);
 }
 
 int SwEc::KeygenInit(EVP_PKEY_CTX *ctx) noexcept { return 1; }
 
 int SwEc::Keygen(EVP_PKEY_CTX *ctx, EVP_PKEY *pkey) noexcept {
-  key_ = EC_KEY_new_by_curve_name(NID_brainpoolP384r1);
+  key_ = EC_KEY_new_by_curve_name(nid_);
   int ok = EC_KEY_generate_key(key_);
   if (ok) {
     ok = EVP_PKEY_set1_EC_KEY(pkey, key_);

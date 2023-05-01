@@ -10,7 +10,7 @@ EVP_PKEY *load_private_key(const char *keyfile) {
 
   EVP_PKEY *pkey = nullptr;
   EC_KEY *ec_key = nullptr;
-  ec_key = EC_KEY_new_by_curve_name(NID_brainpoolP384r1);
+  ec_key = EC_KEY_new_by_curve_name(NID_secp384r1);
 
   if (!ec_key) {
     printf("Error creating EC_KEY object\n");
@@ -56,7 +56,7 @@ EVP_PKEY *load_public_key(const char *keyfile) {
 
   EVP_PKEY *pkey = nullptr;
   EC_KEY *ec_key = nullptr;
-  ec_key = EC_KEY_new_by_curve_name(NID_brainpoolP384r1);
+  ec_key = EC_KEY_new_by_curve_name(NID_secp384r1);
 
   if (!ec_key) {
     printf("Error creating EC_KEY object\n");

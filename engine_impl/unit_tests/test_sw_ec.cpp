@@ -28,7 +28,7 @@ TEST_F(Test_EC, TestECGen) {
   // set seed for deterministic results
   std::vector<std::uint8_t> seed{0xff, 0xff, 0xff, 0xff};
   RAND_seed(seed.data(), seed.size());
-  Factory::SoftwareImpl::SwEc ec;
+  Factory::SoftwareImpl::SwEc ec(NID_secp384r1);
 
   // generate
   auto *ctx = EVP_PKEY_CTX_new(nullptr, nullptr);
@@ -47,7 +47,7 @@ TEST_F(Test_EC, TestECGen) {
 TEST_F(Test_EC, TestECSignSha256)
 {
   int ok = 0;
-  Factory::SoftwareImpl::SwEc ec;
+  Factory::SoftwareImpl::SwEc ec(NID_secp384r1);
   EVP_PKEY *pkey = nullptr;
   EC_KEY *eckey = nullptr;
 
@@ -55,7 +55,7 @@ TEST_F(Test_EC, TestECSignSha256)
   std::string path_to_key = "/home/glaum/engine/keys/private_key.pem";
   FILE *fp = fopen(path_to_key.c_str(), "r");
   pkey = EVP_PKEY_new();
-  eckey = EC_KEY_new_by_curve_name(NID_brainpoolP384r1);
+  eckey = EC_KEY_new_by_curve_name(NID_secp384r1);
   PEM_read_ECPrivateKey(fp, &eckey, nullptr, nullptr);
   ok = EVP_PKEY_set1_EC_KEY(pkey, eckey);
   EC_KEY_free(eckey);
@@ -128,7 +128,7 @@ TEST_F(Test_EC, TestECSignSha256)
 TEST_F(Test_EC, TestECSignSha384)
 {
   int ok = 0;
-  Factory::SoftwareImpl::SwEc ec;
+  Factory::SoftwareImpl::SwEc ec(NID_secp384r1);
   EVP_PKEY *pkey = nullptr;
   EC_KEY *eckey = nullptr;
 
@@ -136,7 +136,7 @@ TEST_F(Test_EC, TestECSignSha384)
   std::string path_to_key = "/home/glaum/engine/keys/private_key.pem";
   FILE *fp = fopen(path_to_key.c_str(), "r");
   pkey = EVP_PKEY_new();
-  eckey = EC_KEY_new_by_curve_name(NID_brainpoolP384r1);
+  eckey = EC_KEY_new_by_curve_name(NID_secp384r1);
   PEM_read_ECPrivateKey(fp, &eckey, nullptr, nullptr);
   ok = EVP_PKEY_set1_EC_KEY(pkey, eckey);
   EC_KEY_free(eckey);
@@ -208,7 +208,7 @@ TEST_F(Test_EC, TestECSignSha384)
 TEST_F(Test_EC, TestECDerive)
 {
   int ok = 0;
-  Factory::SoftwareImpl::SwEc ec;
+  Factory::SoftwareImpl::SwEc ec(NID_secp384r1);
 
   // keys
   EVP_PKEY* pkey;
@@ -223,7 +223,7 @@ TEST_F(Test_EC, TestECDerive)
   // load pkey
   FILE *fp = fopen(path_to_alice_key.c_str(), "r");
   pkey = EVP_PKEY_new();
-  eckey = EC_KEY_new_by_curve_name(NID_brainpoolP384r1);
+  eckey = EC_KEY_new_by_curve_name(NID_secp384r1);
   PEM_read_ECPrivateKey(fp, &eckey, nullptr, nullptr);
   ok = EVP_PKEY_set1_EC_KEY(pkey, eckey);
   EC_KEY_free(eckey);
@@ -233,7 +233,7 @@ TEST_F(Test_EC, TestECDerive)
   // load pubkey
   fp = fopen(path_to_bob_pubkey.c_str(), "r");
   pubkey = EVP_PKEY_new();
-  ecpkey = EC_KEY_new_by_curve_name(NID_brainpoolP384r1);
+  ecpkey = EC_KEY_new_by_curve_name(NID_secp384r1);
   PEM_read_EC_PUBKEY(fp, &ecpkey, nullptr, nullptr);
   ok = EVP_PKEY_set1_EC_KEY(pubkey, ecpkey);
   EC_KEY_free(ecpkey);

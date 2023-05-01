@@ -185,7 +185,7 @@ TEST(Test, Sha384) {
 //   // Load private key with sw
 //   FILE *fp = fopen(path_to_key.c_str(), "r");
 //   pkey_sw = EVP_PKEY_new();
-//   eckey = EC_KEY_new_by_curve_name(NID_brainpoolP384r1);
+//   eckey = EC_KEY_new_by_curve_name(NID_secp384r1);
 //   PEM_read_ECPrivateKey(fp, &eckey, nullptr, nullptr);
 //   ret = EVP_PKEY_set1_EC_KEY(pkey_sw, eckey);
 //   EC_KEY_free(eckey);
@@ -306,7 +306,7 @@ TEST(Test, Sha384) {
 //   // Load private key with sw
 //   FILE *fp = fopen(path_to_key.c_str(), "r");
 //   pkey_sw = EVP_PKEY_new();
-//   eckey = EC_KEY_new_by_curve_name(NID_brainpoolP384r1);
+//   eckey = EC_KEY_new_by_curve_name(NID_secp384r1);
 //   PEM_read_ECPrivateKey(fp, &eckey, nullptr, nullptr);
 //   ret = EVP_PKEY_set1_EC_KEY(pkey_sw, eckey);
 //   EC_KEY_free(eckey);
@@ -337,7 +337,7 @@ TEST(Test, Sha384) {
 //   // Load private key with sw
 //   FILE *fp = fopen(path_to_key.c_str(), "r");
 //   pkey_sw = EVP_PKEY_new();
-//   eckey = EC_KEY_new_by_curve_name(NID_brainpoolP384r1);
+//   eckey = EC_KEY_new_by_curve_name(NID_secp384r1);
 //   PEM_read_EC_PUBKEY(fp, &eckey, nullptr, nullptr);
 //   ret = EVP_PKEY_set1_EC_KEY(pkey_sw, eckey);
 //   EC_KEY_free(eckey);
@@ -873,12 +873,12 @@ TEST(Test, Aes256GCM) {
 
 // //     // Load alice private key with sw
 // //     fp = fopen(path_to_alice_key.c_str(), "r");
-// //     alice_pkey = EC_KEY_new_by_curve_name(NID_brainpoolP384r1);
+// //     alice_pkey = EC_KEY_new_by_curve_name(NID_secp384r1);
 // //     PEM_read_ECPrivateKey(fp, &alice_pkey, nullptr, nullptr);
 
 // //     // Load bob private key with sw
 // //     fp = fopen(path_to_bob_key.c_str(), "r");
-// //     bob_pkey = EC_KEY_new_by_curve_name(NID_brainpoolP384r1);
+// //     bob_pkey = EC_KEY_new_by_curve_name(NID_secp384r1);
 // //     PEM_read_ECPrivateKey(fp, &bob_pkey, nullptr, nullptr);
 
 // //     // Alice computes shared secret
@@ -923,22 +923,22 @@ TEST(Test, Aes256GCM) {
 
 // //     // Load alice private key with sw
 // //     fp = fopen(path_to_alice_key.c_str(), "r");
-// //     alice_pkey = EC_KEY_new_by_curve_name(NID_brainpoolP384r1);
+// //     alice_pkey = EC_KEY_new_by_curve_name(NID_secp384r1);
 // //     PEM_read_ECPrivateKey(fp, &alice_pkey, nullptr, nullptr);
 
 // //     // Load bob private key with sw
 // //     fp = fopen(path_to_bob_key.c_str(), "r");
-// //     bob_pkey = EC_KEY_new_by_curve_name(NID_brainpoolP384r1);
+// //     bob_pkey = EC_KEY_new_by_curve_name(NID_secp384r1);
 // //     PEM_read_ECPrivateKey(fp, &bob_pkey, nullptr, nullptr);
 
 // //     // Load alice public key with sw
 // //     fp = fopen(path_to_alice_pubkey.c_str(), "r");
-// //     alice_pubkey = EC_KEY_new_by_curve_name(NID_brainpoolP384r1);
+// //     alice_pubkey = EC_KEY_new_by_curve_name(NID_secp384r1);
 // //     PEM_read_EC_PUBKEY(fp, &alice_pubkey, nullptr, nullptr);
 
 // //     // Load bob public key with sw
 // //     fp = fopen(path_to_bob_pubkey.c_str(), "r");
-// //     bob_pubkey = EC_KEY_new_by_curve_name(NID_brainpoolP384r1);
+// //     bob_pubkey = EC_KEY_new_by_curve_name(NID_secp384r1);
 // //     PEM_read_EC_PUBKEY(fp, &bob_pubkey, nullptr, nullptr);
 
 // //     // check keys

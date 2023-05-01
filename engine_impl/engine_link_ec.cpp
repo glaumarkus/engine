@@ -1,48 +1,96 @@
 #include "engine_link.h"
+#include <string>
+#include <vector>
+#include "src/engine_factory.hpp"
 
-// note: can set external data: EC_KEY_set_ex_data
 
-int ec_verify_sig(const unsigned char *dgst, int dgst_len, const ECDSA_SIG *sig,
-                  EC_KEY *eckey) {
-  return ECDSA_do_verify(dgst, dgst_len, sig, eckey);
-}
-int ec_verify(int type, const unsigned char *dgst, int dgst_len,
-              const unsigned char *sigbuf, int sig_len, EC_KEY *eckey) {
-  return ECDSA_verify(type, dgst, dgst_len, sigbuf, sig_len, eckey);
+/* ecdsa mapping */
+int ec_init(engine_factory_instance* instance, EVP_PKEY_CTX *ctx) {
+  
+  int ok = 0;
+  // auto *factory = static_cast<Factory::SoftwareImpl::EngineFactory*>(instance->instance);
+  // if (instance != nullptr)
+  // {
+  //   auto factory_ec = factory->GetEC(NID_secp384r1);
+  //   auto *ec = static_cast<Factory::FactoryEC*>(factory_ec.release());
+  //   EVP_PKEY_CTX_set_app_data(ctx, ec);
+  //   if (ec != nullptr)
+  //   {
+  //     ok = ec->Init(ctx);
+  //   }
+
+  // }
+  return ok;
 }
 
-ECDSA_SIG *ec_sign_sig(const unsigned char *dgst, int dgst_len,
-                       const BIGNUM *in_kinv, const BIGNUM *in_r,
-                       EC_KEY *eckey) {
-  return ECDSA_do_sign_ex(dgst, dgst_len, in_kinv, in_r, eckey);
+int ec_cleanup(EVP_PKEY_CTX *ctx) {
+  // auto *ec = reinterpret_cast<Factory::FactoryEC*>(EVP_PKEY_CTX_get_app_data(ctx));
+  // return ec->Cleanup(ctx);
+  return 0;
 }
-int ec_sign_setup(EC_KEY *eckey, BN_CTX *ctx_in, BIGNUM **kinvp, BIGNUM **rp) {
-  return 1;
-}
-int ec_sign(int type, const unsigned char *dgst, int dlen, unsigned char *sig,
-            unsigned int *siglen, const BIGNUM *kinv, const BIGNUM *r,
-            EC_KEY *eckey) {
-  return ECDSA_sign_ex(type, dgst, dlen, sig, siglen, kinv, r, eckey);
-}
-int ec_copy(EC_KEY *dest, const EC_KEY *src) {
-  EC_KEY_copy(dest, src);
-  return 1;
-}
-int ec_set_public(EC_KEY *key, const EC_POINT *pub_key) {
-  return EC_KEY_set_public_key(key, pub_key);
-}
-int ec_set_private(EC_KEY *key, const BIGNUM *priv_key) {
-  return EC_KEY_set_private_key(key, priv_key);
-}
-int ec_set_group(EC_KEY *key, const EC_GROUP *grp) {
-  EC_KEY_set_group(key, grp);
-  return 1;
-}
-void ec_finish(EC_KEY *key) {}
-int ec_init(EC_KEY *key) { return 1; }
-int ec_keygen(EC_KEY *key) { return EC_KEY_generate_key(key); }
-int ec_compute_key(unsigned char **psec, size_t *pseclen,
-                   const EC_POINT *pub_key, const EC_KEY *ecdh) {
 
-  return ECDH_compute_key(psec, *pseclen, pub_key, ecdh, nullptr);
+int ec_signctx_init(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx) {
+  // auto *ec = reinterpret_cast<Factory::FactoryEC*>(EVP_PKEY_CTX_get_app_data(ctx));
+  // return ec->SignInit(ctx, mctx);
+  return 0;
+}
+
+int ec_verifyctx_init(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx) {
+  //  auto *ec = reinterpret_cast<Factory::FactoryEC*>(EVP_PKEY_CTX_get_app_data(ctx));
+  // return ec->VerifyInit(ctx, mctx);
+  return 0;
+}
+
+int ec_signctx(EVP_PKEY_CTX *ctx, unsigned char *sig, size_t *siglen,
+                  EVP_MD_CTX *mctx) {
+  // auto *ec = reinterpret_cast<Factory::FactoryEC*>(EVP_PKEY_CTX_get_app_data(ctx));
+  // return ec->Sign(ctx, sig, siglen, mctx);
+  return 0;
+}
+
+int ec_verifyctx(EVP_PKEY_CTX *ctx, const unsigned char *sig, int siglen,
+                    EVP_MD_CTX *mctx) {
+  // auto *ec = reinterpret_cast<Factory::FactoryEC*>(EVP_PKEY_CTX_get_app_data(ctx));
+  // return ec->Verify(ctx, sig, siglen, mctx);
+  return 0;
+}
+
+
+int ec_custom_digest(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx) {
+  // auto *ec = reinterpret_cast<Factory::FactoryEC*>(EVP_PKEY_CTX_get_app_data(ctx));
+  // return ec->CustomDigest(ctx, mctx);
+  return 0;
+}
+
+int ec_ctrl(EVP_PKEY_CTX *ctx, int type, int p1, void *p2) {
+  // auto *ec = reinterpret_cast<Factory::FactoryEC*>(EVP_PKEY_CTX_get_app_data(ctx));
+  // return ec->Ctrl(ctx, type, p1, p2);
+  return 0;
+}
+
+/* ecdh mapping */
+int ec_derive_init(EVP_PKEY_CTX *ctx) {
+  // auto *ec = reinterpret_cast<Factory::FactoryEC*>(EVP_PKEY_CTX_get_app_data(ctx));
+  // return ec->DeriveInit(ctx);
+  return 0;
+}
+
+int ec_derive(EVP_PKEY_CTX *ctx, unsigned char *key, size_t *keylen) {
+  // auto *ec = reinterpret_cast<Factory::FactoryEC*>(EVP_PKEY_CTX_get_app_data(ctx));
+  // return ec->Derive(ctx, key, keylen);
+  return 0;
+}
+
+int ec_keygen_init(EVP_PKEY_CTX *ctx)
+{
+  // auto *ec = reinterpret_cast<Factory::FactoryEC*>(EVP_PKEY_CTX_get_app_data(ctx));
+  // return ec->KeygenInit(ctx);
+  return 0;
+}
+
+int ec_keygen(EVP_PKEY_CTX *ctx, EVP_PKEY *pkey)
+{ 
+  // auto *ec = reinterpret_cast<Factory::FactoryEC*>(EVP_PKEY_CTX_get_app_data(ctx));
+  // return ec->Keygen(ctx, pkey);
+  return 0;
 }

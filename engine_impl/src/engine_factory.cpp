@@ -124,6 +124,14 @@ std::unique_ptr<FactoryDigest> EngineFactory::GetDigest(int nid) noexcept
     return digest;
 }
 
+std::unique_ptr<FactoryEC> EngineFactory::GetEC(int nid) noexcept 
+{
+    std::unique_ptr<FactoryEC> ec {nullptr};
+    auto *sw_ec = new SwEc(nid);
+    ec = static_cast<std::unique_ptr<FactoryEC>>(sw_ec);
+    return ec;
+}
+
 
 } // namespace SoftwareImpl
 } // namespace Factory

@@ -11,11 +11,12 @@
 #include "ciphers/sw_cipher_aes256cbc.hpp"
 #include "ciphers/sw_cipher_aes256gcm.hpp"
 #include "ciphers/sw_cipher_chacha20.hpp"
+#include "asym/sw_ec.hpp"
 
 namespace Factory {
 namespace SoftwareImpl {
 
-class EngineFactory : public Factory::Factory
+class EngineFactory : public Factory::EngineFactory
 {
 public:
 
@@ -33,6 +34,7 @@ public:
 
     std::unique_ptr<FactoryCipher> GetCipher(int nid) noexcept override;
     std::unique_ptr<FactoryDigest> GetDigest(int nid) noexcept override;
+    std::unique_ptr<FactoryEC> GetEC(int nid) noexcept override;
 
 private:
 

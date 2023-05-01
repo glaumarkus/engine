@@ -213,6 +213,7 @@ set(ENGINE_IMPL_SRCS
   engine_impl/src/asym/sw_cert.cpp
   engine_impl/src/asym/sw_pkey.cpp
   engine_impl/src/asym/sw_pubkey.cpp
+  engine_impl/src/random/sw_random.cpp
 )
 
 add_library(

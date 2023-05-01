@@ -21,7 +21,7 @@ struct engine_factory_instance
 void get_impl_size(size_t* size);
 int init(struct engine_factory_instance* instance);
 int finish(struct engine_factory_instance* instance);
-int ctrl_cmd_string(ENGINE *e, int cmd, long i, void *p, void (*f)(void));
+int ctrl_cmd_string(struct engine_factory_instance* instance, ENGINE *e, int cmd, long i, void *p, void (*f)(void));
 
 
 /* sha256 mapping */

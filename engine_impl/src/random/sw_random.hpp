@@ -17,10 +17,10 @@ public:
   SwRandom &operator=(SwRandom &&) = delete;
   ~SwRandom() = default;
 
-  static void Cleanup() noexcept override;
-  static int RandomBytes(unsigned char *buf, int num) noexcept override;
-  static int RandomStatus() noexcept override;
-  static int SetSeed() noexcept override;
+  void Cleanup() noexcept override;
+  int RandomBytes(unsigned char *buf, int num) noexcept override;
+  int RandomStatus() noexcept override;
+  int SetSeed() noexcept override;
 
 };
 

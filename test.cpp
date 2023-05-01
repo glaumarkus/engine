@@ -813,7 +813,6 @@ TEST(Test, LoadCertificate) {
   // check if engine supports LOAD_CERT_CTRL
   params p;
   p.cert_id = "/home/glaum/engine/keys/certificate.pem";
-  printf("certstr: %p, addr: %p\n", p.cert_id, &p.cert_id);
 
   auto cmd_name = "LOAD_CERT_CTRL";
   int engine_support = ENGINE_ctrl(engine, ENGINE_CTRL_GET_CMD_FROM_NAME, 0,

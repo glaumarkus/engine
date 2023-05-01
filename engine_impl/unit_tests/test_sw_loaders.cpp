@@ -88,7 +88,7 @@ TEST_F(Test_Loaders, LoadSwPrivateKey)
     FILE *fp = fopen("/home/glaum/engine/keys/alice_pkey.pem", "r");
     EVP_PKEY *pkey_sw = nullptr;
     EC_KEY *ec_key = nullptr;
-    ec_key = EC_KEY_new_by_curve_name(NID_brainpoolP384r1);
+    ec_key = EC_KEY_new_by_curve_name(NID_secp384r1);
     EXPECT_NE(ec_key, nullptr);
     PEM_read_ECPrivateKey(fp, &ec_key, nullptr, nullptr);
     pkey_sw = EVP_PKEY_new();
@@ -129,7 +129,7 @@ TEST_F(Test_Loaders, LoadSwPublicKey)
     FILE *fp = fopen("/home/glaum/engine/keys/alice_pubkey.pem", "r");
     EVP_PKEY *pubkey_sw = nullptr;
     EC_KEY *ec_key = nullptr;
-    ec_key = EC_KEY_new_by_curve_name(NID_brainpoolP384r1);
+    ec_key = EC_KEY_new_by_curve_name(NID_secp384r1);
     EXPECT_NE(ec_key, nullptr);
     PEM_read_ECPrivateKey(fp, &ec_key, nullptr, nullptr);
     pubkey_sw = EVP_PKEY_new();

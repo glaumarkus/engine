@@ -17,7 +17,7 @@ FILE *fp = fopen(key_id, "r");
 
   EVP_PKEY *pubkey = nullptr;
   EC_KEY *ec_key = nullptr;
-  ec_key = EC_KEY_new_by_curve_name(NID_brainpoolP384r1);
+  ec_key = EC_KEY_new_by_curve_name(NID_secp384r1);
 
   if (!ec_key) {
     printf("Error creating EC_KEY object\n");

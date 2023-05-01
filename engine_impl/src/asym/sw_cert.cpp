@@ -15,6 +15,8 @@ int SwCertificate::Load(const char *cert_id) noexcept  {
       ok = 1;
     }
   }
+  BIO_free(cert_bio);
+
   return ok;
 }
 

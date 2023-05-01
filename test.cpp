@@ -91,319 +91,182 @@ TEST(Test, Sha384) {
   EXPECT_EQ(digest_sw, digest_engine);
 }
 
-// TEST(Test, ECDHEngine) {
-//   ASSERT_NE(engine, nullptr);
+TEST(Test, ECDHEngine) {
+  ASSERT_NE(engine, nullptr);
 
-//   int ret = 0;
-//   std::string path_to_alice_key = "/home/glaum/engine/keys/alice_pkey.pem";
-//   std::string path_to_bob_pubkey = "/home/glaum/engine/keys/bob_pubkey.pem";
-//   std::string path_to_bob_key = "/home/glaum/engine/keys/bob_pkey.pem";
-//   std::string path_to_alice_pubkey = "/home/glaum/engine/keys/alice_pubkey.pem";
-//   std::size_t engine_secret_len = 0;
+  int ret = 0;
+  std::string path_to_alice_key = "/home/glaum/engine/keys/alice_pkey.pem";
+  std::string path_to_bob_pubkey = "/home/glaum/engine/keys/bob_pubkey.pem";
+  std::string path_to_bob_key = "/home/glaum/engine/keys/bob_pkey.pem";
+  std::string path_to_alice_pubkey = "/home/glaum/engine/keys/alice_pubkey.pem";
+  std::size_t engine_secret_len = 0;
 
-//   // load alice key
-//   EVP_PKEY *alice_pkey_engine = nullptr;
-//   alice_pkey_engine = ENGINE_load_private_key(engine, path_to_alice_key.c_str(),
-//                                               nullptr, nullptr);
-//   EXPECT_NE(alice_pkey_engine, nullptr);
+  // load alice key
+  EVP_PKEY *alice_pkey_engine = nullptr;
+  alice_pkey_engine = ENGINE_load_private_key(engine, path_to_alice_key.c_str(),
+                                              nullptr, nullptr);
+  EXPECT_NE(alice_pkey_engine, nullptr);
 
-//   // load bob public key
-//   EVP_PKEY *bob_pubkey_engine = nullptr;
-//   bob_pubkey_engine = ENGINE_load_public_key(engine, path_to_bob_pubkey.c_str(),
-//                                              nullptr, nullptr);
-//   EXPECT_NE(bob_pubkey_engine, nullptr);
+  // load bob public key
+  EVP_PKEY *bob_pubkey_engine = nullptr;
+  bob_pubkey_engine = ENGINE_load_public_key(engine, path_to_bob_pubkey.c_str(),
+                                             nullptr, nullptr);
+  EXPECT_NE(bob_pubkey_engine, nullptr);
 
-//   // derive alice
-//   EVP_PKEY_CTX *ctx1 = EVP_PKEY_CTX_new(alice_pkey_engine, engine);
-//   ret = EVP_PKEY_derive_init(ctx1);
-//   EXPECT_EQ(ret, 1);
-//   ret = EVP_PKEY_derive_set_peer(ctx1, bob_pubkey_engine);
-//   EXPECT_EQ(ret, 1);
-//   ret = EVP_PKEY_derive(ctx1, nullptr, &engine_secret_len);
-//   std::vector<std::uint8_t> shared_secret_alice;
-//   shared_secret_alice.resize(engine_secret_len);
-//   ret = EVP_PKEY_derive(ctx1, shared_secret_alice.data(), &engine_secret_len);
-//   shared_secret_alice.resize(engine_secret_len);
-//   EXPECT_EQ(ret, 1);
-//   EXPECT_EQ(shared_secret_alice.size(), 48);
-//   EVP_PKEY_CTX_free(ctx1);
+  // derive alice
+  EVP_PKEY_CTX *ctx1 = EVP_PKEY_CTX_new(alice_pkey_engine, engine);
+  ret = EVP_PKEY_derive_init(ctx1);
+  EXPECT_EQ(ret, 1);
+  ret = EVP_PKEY_derive_set_peer(ctx1, bob_pubkey_engine);
+  EXPECT_EQ(ret, 1);
+  ret = EVP_PKEY_derive(ctx1, nullptr, &engine_secret_len);
+  std::vector<std::uint8_t> shared_secret_alice;
+  shared_secret_alice.resize(engine_secret_len);
+  ret = EVP_PKEY_derive(ctx1, shared_secret_alice.data(), &engine_secret_len);
+  shared_secret_alice.resize(engine_secret_len);
+  EXPECT_EQ(ret, 1);
+  EXPECT_EQ(shared_secret_alice.size(), 48);
+  EVP_PKEY_CTX_free(ctx1);
 
-//   // load bob key
-//   EVP_PKEY *bob_pkey_engine = nullptr;
-//   bob_pkey_engine = ENGINE_load_private_key(engine, path_to_bob_key.c_str(),
-//                                             nullptr, nullptr);
-//   EXPECT_NE(bob_pkey_engine, nullptr);
+  // load bob key
+  EVP_PKEY *bob_pkey_engine = nullptr;
+  bob_pkey_engine = ENGINE_load_private_key(engine, path_to_bob_key.c_str(),
+                                            nullptr, nullptr);
+  EXPECT_NE(bob_pkey_engine, nullptr);
 
-//   // load alice public key
-//   EVP_PKEY *alice_pubkey_engine = nullptr;
-//   alice_pubkey_engine = ENGINE_load_public_key(
-//       engine, path_to_alice_pubkey.c_str(), nullptr, nullptr);
-//   EXPECT_NE(alice_pubkey_engine, nullptr);
+  // load alice public key
+  EVP_PKEY *alice_pubkey_engine = nullptr;
+  alice_pubkey_engine = ENGINE_load_public_key(
+      engine, path_to_alice_pubkey.c_str(), nullptr, nullptr);
+  EXPECT_NE(alice_pubkey_engine, nullptr);
 
-//   // derive bob
-//   EVP_PKEY_CTX *ctx2 = EVP_PKEY_CTX_new(bob_pkey_engine, engine);
-//   ret = EVP_PKEY_derive_init(ctx2);
-//   EXPECT_EQ(ret, 1);
-//   ret = EVP_PKEY_derive_set_peer(ctx2, alice_pubkey_engine);
-//   EXPECT_EQ(ret, 1);
-//   engine_secret_len = 0;
-//   ret = EVP_PKEY_derive(ctx2, nullptr, &engine_secret_len);
-//   std::vector<std::uint8_t> shared_secret_bob;
-//   shared_secret_bob.resize(engine_secret_len);
-//   ret = EVP_PKEY_derive(ctx2, shared_secret_bob.data(), &engine_secret_len);
-//   shared_secret_bob.resize(engine_secret_len);
-//   EXPECT_EQ(ret, 1);
-//   EXPECT_EQ(shared_secret_bob.size(), 48);
-//   EVP_PKEY_CTX_free(ctx2);
+  // derive bob
+  EVP_PKEY_CTX *ctx2 = EVP_PKEY_CTX_new(bob_pkey_engine, engine);
+  ret = EVP_PKEY_derive_init(ctx2);
+  EXPECT_EQ(ret, 1);
+  ret = EVP_PKEY_derive_set_peer(ctx2, alice_pubkey_engine);
+  EXPECT_EQ(ret, 1);
+  engine_secret_len = 0;
+  ret = EVP_PKEY_derive(ctx2, nullptr, &engine_secret_len);
+  std::vector<std::uint8_t> shared_secret_bob;
+  shared_secret_bob.resize(engine_secret_len);
+  ret = EVP_PKEY_derive(ctx2, shared_secret_bob.data(), &engine_secret_len);
+  shared_secret_bob.resize(engine_secret_len);
+  EXPECT_EQ(ret, 1);
+  EXPECT_EQ(shared_secret_bob.size(), 48);
+  EVP_PKEY_CTX_free(ctx2);
 
-//   // compare derived secrets
-//   EXPECT_EQ(shared_secret_alice, shared_secret_bob);
+  // compare derived secrets
+  EXPECT_EQ(shared_secret_alice, shared_secret_bob);
 
-//   // free keys
-//   EVP_PKEY_free(alice_pkey_engine);
-//   EVP_PKEY_free(bob_pkey_engine);
-//   EVP_PKEY_free(alice_pubkey_engine);
-//   EVP_PKEY_free(bob_pubkey_engine);
-// }
+  // free keys
+  EVP_PKEY_free(alice_pkey_engine);
+  EVP_PKEY_free(bob_pkey_engine);
+  EVP_PKEY_free(alice_pubkey_engine);
+  EVP_PKEY_free(bob_pubkey_engine);
+}
 
-// // ToDo: needs some more debugging for the Digest used so no extra digest is
-// // required
-// TEST(Test, ECDSA) {
-//   ASSERT_NE(engine, nullptr);
+// ToDo: needs some more debugging for the Digest used so no extra digest is
+// required
+TEST(Test, ECDSA) {
+  ASSERT_NE(engine, nullptr);
 
-//   // Setup vars
-//   EVP_PKEY *pkey_sw = nullptr;
-//   EC_KEY *eckey = nullptr;
-//   int ret = 0;
-//   std::string path_to_key = "/home/glaum/engine/keys/private_key.pem";
-//   std::string path_to_pubkey = "/home/glaum/engine/keys/public_key.pem";
-//   size_t siglen = 0;
-//   std::vector<uint8_t> signature;
-//   std::vector<uint8_t> signature_engine;
-//   std::string msg("Sign this example message with EC private key");
+  // Setup vars
+  EVP_PKEY *pkey_sw = nullptr;
+  EVP_PKEY *pubkey_sw = nullptr;
+  EC_KEY *eckey = nullptr;
+  int ret = 0;
+  std::string path_to_key = "/home/glaum/engine/keys/private_key.pem";
+  std::string path_to_pubkey = "/home/glaum/engine/keys/public_key.pem";
+  size_t siglen = 0;
+  std::vector<uint8_t> signature;
+  std::vector<uint8_t> signature_engine;
+  std::string msg("Sign this example message with EC private key");
 
-//   // Load private key with sw
-//   FILE *fp = fopen(path_to_key.c_str(), "r");
-//   pkey_sw = EVP_PKEY_new();
-//   eckey = EC_KEY_new_by_curve_name(NID_secp384r1);
-//   PEM_read_ECPrivateKey(fp, &eckey, nullptr, nullptr);
-//   ret = EVP_PKEY_set1_EC_KEY(pkey_sw, eckey);
-//   EC_KEY_free(eckey);
-//   EXPECT_NE(EVP_PKEY_id(pkey_sw), EVP_PKEY_NONE);
+  // Load private key with sw
+  FILE *fp = fopen(path_to_key.c_str(), "r");
+  pkey_sw = EVP_PKEY_new();
+  eckey = EC_KEY_new_by_curve_name(NID_secp384r1);
+  PEM_read_ECPrivateKey(fp, &eckey, nullptr, nullptr);
+  ret = EVP_PKEY_set1_EC_KEY(pkey_sw, eckey);
+  EC_KEY_free(eckey);
+  EXPECT_NE(EVP_PKEY_id(pkey_sw), EVP_PKEY_NONE);
 
-//   // Check if type matches
-//   int type = EVP_PKEY_base_id(pkey_sw);
-//   EXPECT_EQ(type, EVP_PKEY_EC);
+  // Check if type matches
+  int type = EVP_PKEY_base_id(pkey_sw);
+  EXPECT_EQ(type, EVP_PKEY_EC);
 
-//   // Sign with sw
-//   EVP_MD_CTX *mdctx = NULL;
-//   mdctx = EVP_MD_CTX_new();
-//   ret = EVP_DigestSignInit(mdctx, NULL, EVP_sha256(), NULL, pkey_sw);
-//   EXPECT_EQ(ret, 1);
-//   ret = EVP_DigestSignUpdate(mdctx, (unsigned char *)msg.data(), msg.size());
-//   EXPECT_EQ(ret, 1);
-//   ret = EVP_DigestSignFinal(mdctx, NULL, &siglen);
-//   // resize signature
-//   signature.resize(siglen);
-//   EVP_DigestSignFinal(mdctx, (unsigned char *)signature.data(), &siglen);
-//   EVP_MD_CTX_free(mdctx);
+  // Load public key with sw
+  fp = fopen(path_to_pubkey.c_str(), "r");
+  pubkey_sw = EVP_PKEY_new();
+  eckey = EC_KEY_new_by_curve_name(NID_secp384r1);
+  PEM_read_EC_PUBKEY(fp, &eckey, nullptr, nullptr);
+  ret = EVP_PKEY_set1_EC_KEY(pubkey_sw, eckey);
+  EC_KEY_free(eckey);
+  EXPECT_NE(EVP_PKEY_id(pubkey_sw), EVP_PKEY_NONE);
 
-//   // Do verify sw sign
-//   mdctx = EVP_MD_CTX_new();
-//   ret = EVP_DigestVerifyInit(mdctx, nullptr, EVP_sha256(), NULL, pkey_sw);
-//   EXPECT_EQ(ret, 1);
-//   ret = EVP_DigestVerifyUpdate(mdctx, (unsigned char *)msg.data(), msg.size());
-//   EXPECT_EQ(ret, 1);
-//   ret = EVP_DigestVerifyFinal(mdctx, (unsigned char *)signature.data(), siglen);
-//   EXPECT_EQ(ret, 1);
-//   EVP_MD_CTX_free(mdctx);
-
-//   // load key with engine
-//   EVP_PKEY *pkey_engine = nullptr;
-//   pkey_engine =
-//       ENGINE_load_private_key(engine, path_to_key.c_str(), nullptr, nullptr);
-//   EXPECT_NE(pkey_engine, nullptr);
-
-//   // Check if type matches
-//   type = EVP_PKEY_base_id(pkey_engine);
-//   EXPECT_EQ(type, EVP_PKEY_EC);
-
-//   // sign with engine
-//   mdctx = EVP_MD_CTX_new();
-//   ret = EVP_DigestSignInit(mdctx, nullptr, EVP_sha256(), engine, pkey_engine);
-//   EXPECT_EQ(ret, 1);
-//   ret = EVP_DigestSignUpdate(mdctx, (unsigned char *)msg.data(), msg.size());
-//   EXPECT_EQ(ret, 1);
-//   signature_engine.resize(EVP_PKEY_size(pkey_engine));
-//   ret = EVP_DigestSignFinal(mdctx, (unsigned char *)signature_engine.data(),
-//                             &siglen);
-//   signature_engine.resize(siglen);
-//   EVP_MD_CTX_free(mdctx);
-
-//   // Do verify engine sign
-//   mdctx = EVP_MD_CTX_new();
-//   ret = EVP_DigestVerifyInit(mdctx, nullptr, EVP_sha256(), NULL, pkey_sw);
-//   EXPECT_EQ(ret, 1);
-//   ret = EVP_DigestVerifyUpdate(mdctx, (unsigned char *)msg.data(), msg.size());
-//   EXPECT_EQ(ret, 1);
-//   ret = EVP_DigestVerifyFinal(mdctx, (unsigned char *)signature_engine.data(),
-//                               siglen);
-//   EXPECT_EQ(ret, 1);
-//   EVP_MD_CTX_free(mdctx);
-
-//   // Do verify of engine sign with engine
-//   mdctx = EVP_MD_CTX_new();
-//   ret = EVP_DigestVerifyInit(mdctx, nullptr, EVP_sha256(), engine, pkey_engine);
-//   EXPECT_EQ(ret, 1);
-//   ret = EVP_DigestVerifyUpdate(mdctx, (unsigned char *)msg.data(), msg.size());
-//   EXPECT_EQ(ret, 1);
-//   ret = EVP_DigestVerifyFinal(mdctx, (unsigned char *)signature_engine.data(),
-//                               siglen);
-//   EXPECT_EQ(ret, 1);
-//   EVP_MD_CTX_free(mdctx);
-
-//   // Do verify of sw sign with engine
-//   mdctx = EVP_MD_CTX_new();
-//   ret = EVP_DigestVerifyInit(mdctx, nullptr, EVP_sha256(), engine, pkey_engine);
-//   EXPECT_EQ(ret, 1);
-//   ret = EVP_DigestVerifyUpdate(mdctx, (unsigned char *)msg.data(), msg.size());
-//   EXPECT_EQ(ret, 1);
-//   ret = EVP_DigestVerifyFinal(mdctx, (unsigned char *)signature.data(),
-//                               signature.size());
-//   EXPECT_EQ(ret, 1);
-//   EVP_MD_CTX_free(mdctx);
-
-//   // load public key with engine
-//   EVP_PKEY *pubkey_engine = nullptr;
-//   pubkey_engine =
-//       ENGINE_load_public_key(engine, path_to_pubkey.c_str(), nullptr, nullptr);
-//   EXPECT_NE(pkey_engine, nullptr);
-
-//   // Check if type matches
-//   type = EVP_PKEY_base_id(pkey_engine);
-//   EXPECT_EQ(type, EVP_PKEY_EC);
-
-//   // Do verify of sw sign with public key
-//   mdctx = EVP_MD_CTX_new();
-//   ret =
-//       EVP_DigestVerifyInit(mdctx, nullptr, EVP_sha256(), engine, pubkey_engine);
-//   EXPECT_EQ(ret, 1);
-//   ret = EVP_DigestVerifyUpdate(mdctx, (unsigned char *)msg.data(), msg.size());
-//   EXPECT_EQ(ret, 1);
-//   ret = EVP_DigestVerifyFinal(mdctx, (unsigned char *)signature.data(),
-//                               signature.size());
-//   EXPECT_EQ(ret, 1);
-//   EVP_MD_CTX_free(mdctx);
-// }
-
-// TEST(Test, LoadPrivateKey) {
-//   ASSERT_NE(engine, nullptr);
-//   EVP_PKEY *pkey_sw = nullptr;
-//   EC_KEY *eckey = nullptr;
-//   int ret = 0;
-//   std::string path_to_key = "/home/glaum/engine/keys/private_key.pem";
-
-//   // Load private key with sw
-//   FILE *fp = fopen(path_to_key.c_str(), "r");
-//   pkey_sw = EVP_PKEY_new();
-//   eckey = EC_KEY_new_by_curve_name(NID_secp384r1);
-//   PEM_read_ECPrivateKey(fp, &eckey, nullptr, nullptr);
-//   ret = EVP_PKEY_set1_EC_KEY(pkey_sw, eckey);
-//   EC_KEY_free(eckey);
-//   EXPECT_NE(EVP_PKEY_id(pkey_sw), EVP_PKEY_NONE);
-
-//   // Load private key with engine
-//   EVP_PKEY *pkey_engine = nullptr;
-//   pkey_engine =
-//       ENGINE_load_private_key(engine, path_to_key.c_str(), nullptr, nullptr);
-//   EXPECT_NE(pkey_engine, nullptr);
-
-//   // compare the keys
-//   ret = EVP_PKEY_cmp(pkey_sw, pkey_engine);
-//   EXPECT_TRUE(ret);
-
-//   // compare the key params
-//   ret = EVP_PKEY_cmp_parameters(pkey_sw, pkey_engine);
-//   EXPECT_TRUE(ret);
-// }
-
-// TEST(Test, LoadPublicKey) {
-//   ASSERT_NE(engine, nullptr);
-//   EVP_PKEY *pkey_sw = nullptr;
-//   EC_KEY *eckey = nullptr;
-//   int ret = 0;
-//   std::string path_to_key = "/home/glaum/engine/keys/public_key.pem";
-
-//   // Load private key with sw
-//   FILE *fp = fopen(path_to_key.c_str(), "r");
-//   pkey_sw = EVP_PKEY_new();
-//   eckey = EC_KEY_new_by_curve_name(NID_secp384r1);
-//   PEM_read_EC_PUBKEY(fp, &eckey, nullptr, nullptr);
-//   ret = EVP_PKEY_set1_EC_KEY(pkey_sw, eckey);
-//   EC_KEY_free(eckey);
-//   EXPECT_NE(EVP_PKEY_id(pkey_sw), EVP_PKEY_NONE);
-
-//   // Load private key with engine
-//   EVP_PKEY *pkey_engine = nullptr;
-//   pkey_engine =
-//       ENGINE_load_public_key(engine, path_to_key.c_str(), nullptr, nullptr);
-//   EXPECT_NE(pkey_engine, nullptr);
-
-//   // compare the keys
-//   ret = EVP_PKEY_cmp(pkey_sw, pkey_engine);
-//   EXPECT_TRUE(ret);
-
-//   // compare the key params
-//   ret = EVP_PKEY_cmp_parameters(pkey_sw, pkey_engine);
-//   EXPECT_TRUE(ret);
-// }
-
-// TEST(Test, LoadCertificate) {
-//   ASSERT_NE(engine, nullptr);
-//   // path to cert
-//   std::string cert_path = "/home/glaum/engine/keys/certificate.pem";
-
-//   // load cert with sw
-//   BIO *cert_bio = BIO_new_file(cert_path.c_str(), "r");
-//   if (!cert_bio)
-//     FAIL();
-
-//   // Read the certificate from the BIO
-//   X509 *cert_sw = PEM_read_bio_X509(cert_bio, NULL, NULL, NULL);
-//   if (!cert_sw)
-//     FAIL();
-
-//   // Free the BIO
-//   BIO_free(cert_bio);
-
-//   // curl does this:
-//   struct params {
-//     const char *cert_id;
-//     X509 *cert;
-//   };
-
-//   // check if engine supports LOAD_CERT_CTRL
-//   params p;
-//   p.cert_id = "/home/glaum/engine/keys/certificate.pem";
-//   printf("certstr: %p, addr: %p\n", p.cert_id, &p.cert_id);
-
-//   auto cmd_name = "LOAD_CERT_CTRL";
-//   int engine_support = ENGINE_ctrl(engine, ENGINE_CTRL_GET_CMD_FROM_NAME, 0,
-//                                    (void *)cmd_name, NULL);
-//   EXPECT_EQ(1, engine_support);
-
-//   // load the certificate from the engine
-//   int engine_load = ENGINE_ctrl_cmd(engine, cmd_name, 0, &p, NULL, 1);
-//   EXPECT_EQ(1, engine_load);
-
-//   // check if equal, strangely 0 here means same as memcmp is used
-//   int equal = X509_cmp(cert_sw, p.cert);
-//   EXPECT_EQ(equal, 0);
-// }
+  // Check if type matches
+  type = EVP_PKEY_base_id(pubkey_sw);
+  EXPECT_EQ(type, EVP_PKEY_EC);
 
 
+  // Sign with sw
+  EVP_MD_CTX *mdctx = NULL;
+  mdctx = EVP_MD_CTX_new();
+  ret = EVP_DigestSignInit(mdctx, NULL, EVP_sha256(), NULL, pkey_sw);
+  EXPECT_EQ(ret, 1);
+  ret = EVP_DigestSignUpdate(mdctx, (unsigned char *)msg.data(), msg.size());
+  EXPECT_EQ(ret, 1);
+  ret = EVP_DigestSignFinal(mdctx, NULL, &siglen);
+  // resize signature
+  signature.resize(siglen);
+  EVP_DigestSignFinal(mdctx, (unsigned char *)signature.data(), &siglen);
+  EVP_MD_CTX_free(mdctx);
 
+  // Do verify sw sign
+  mdctx = EVP_MD_CTX_new();
+  ret = EVP_DigestVerifyInit(mdctx, nullptr, EVP_sha256(), NULL, pubkey_sw);
+  EXPECT_EQ(ret, 1);
+  ret = EVP_DigestVerifyUpdate(mdctx, (unsigned char *)msg.data(), msg.size());
+  EXPECT_EQ(ret, 1);
+  ret = EVP_DigestVerifyFinal(mdctx, (unsigned char *)signature.data(), siglen);
+  EXPECT_EQ(ret, 1);
+  EVP_MD_CTX_free(mdctx);
 
+  // sign with engine
+  mdctx = EVP_MD_CTX_new();
+  ret = EVP_DigestSignInit(mdctx, nullptr, EVP_sha256(), engine, pkey_sw);
+  EXPECT_EQ(ret, 1);
+  ret = EVP_DigestSignUpdate(mdctx, (unsigned char *)msg.data(), msg.size());
+  EXPECT_EQ(ret, 1);
+  signature_engine.resize(EVP_PKEY_size(pkey_sw));
+  ret = EVP_DigestSignFinal(mdctx, (unsigned char *)signature_engine.data(),
+                            &siglen);
+  signature_engine.resize(siglen);
+  EVP_MD_CTX_free(mdctx);
+
+  // Do verify engine sign
+  mdctx = EVP_MD_CTX_new();
+  ret = EVP_DigestVerifyInit(mdctx, nullptr, EVP_sha256(), NULL, pubkey_sw);
+  EXPECT_EQ(ret, 1);
+  ret = EVP_DigestVerifyUpdate(mdctx, (unsigned char *)msg.data(), msg.size());
+  EXPECT_EQ(ret, 1);
+  ret = EVP_DigestVerifyFinal(mdctx, (unsigned char *)signature_engine.data(),
+                              siglen);
+  EXPECT_EQ(ret, 1);
+  EVP_MD_CTX_free(mdctx);
+
+  // Do verify of engine sign with engine
+  mdctx = EVP_MD_CTX_new();
+  ret = EVP_DigestVerifyInit(mdctx, nullptr, EVP_sha256(), engine, pubkey_sw);
+  EXPECT_EQ(ret, 1);
+  ret = EVP_DigestVerifyUpdate(mdctx, (unsigned char *)msg.data(), msg.size());
+  EXPECT_EQ(ret, 1);
+  ret = EVP_DigestVerifyFinal(mdctx, (unsigned char *)signature_engine.data(),
+                              siglen);
+  EXPECT_EQ(ret, 1);
+  EVP_MD_CTX_free(mdctx);
+}
 
 TEST(Test, AesCbc256) {
   ASSERT_NE(engine, nullptr);
@@ -861,165 +724,110 @@ TEST(Test, Aes256GCM) {
   EXPECT_EQ(decrypted_en, decrypted_sw);
 }
 
-// // TEST(Test, ECDHNotWorking)
-// // {
-// //     std::string path_to_alice_key =
-// // "/home/glaum/engine/keys/alice_pkey.pem";
-// //     std::string path_to_bob_key = "/home/glaum/engine/keys/bob_pkey.pem";
-// //     EC_KEY* alice_pkey;
-// //     EC_KEY* bob_pkey;
-// //     int ret;
-// //     FILE* fp;
+TEST(Test, LoadPrivateKey) {
+  ASSERT_NE(engine, nullptr);
+  EVP_PKEY *pkey_sw = nullptr;
+  EC_KEY *eckey = nullptr;
+  int ret = 0;
+  std::string path_to_key = "/home/glaum/engine/keys/private_key.pem";
 
-// //     // Load alice private key with sw
-// //     fp = fopen(path_to_alice_key.c_str(), "r");
-// //     alice_pkey = EC_KEY_new_by_curve_name(NID_secp384r1);
-// //     PEM_read_ECPrivateKey(fp, &alice_pkey, nullptr, nullptr);
+  // Load private key with sw
+  FILE *fp = fopen(path_to_key.c_str(), "r");
+  pkey_sw = EVP_PKEY_new();
+  eckey = EC_KEY_new_by_curve_name(NID_secp384r1);
+  PEM_read_ECPrivateKey(fp, &eckey, nullptr, nullptr);
+  ret = EVP_PKEY_set1_EC_KEY(pkey_sw, eckey);
+  EC_KEY_free(eckey);
+  EXPECT_NE(EVP_PKEY_id(pkey_sw), EVP_PKEY_NONE);
 
-// //     // Load bob private key with sw
-// //     fp = fopen(path_to_bob_key.c_str(), "r");
-// //     bob_pkey = EC_KEY_new_by_curve_name(NID_secp384r1);
-// //     PEM_read_ECPrivateKey(fp, &bob_pkey, nullptr, nullptr);
+  // Load private key with engine
+  EVP_PKEY *pkey_engine = nullptr;
+  pkey_engine =
+      ENGINE_load_private_key(engine, path_to_key.c_str(), nullptr, nullptr);
+  EXPECT_NE(pkey_engine, nullptr);
 
-// //     // Alice computes shared secret
-// //     unsigned char* alice_shared_secret = nullptr;
-// //     int alice_shared_secret_len = ECDH_compute_key(alice_shared_secret, 0,
-// //     EC_KEY_get0_public_key(bob_pkey), alice_pkey, nullptr);
+  // compare the keys
+  ret = EVP_PKEY_cmp(pkey_sw, pkey_engine);
+  EXPECT_TRUE(ret);
 
-// //     // Bob computes shared secret
-// //     unsigned char* bob_shared_secret = nullptr;
-// //     int bob_shared_secret_len = ECDH_compute_key(bob_shared_secret, 0,
-// //     EC_KEY_get0_public_key(alice_pkey), bob_pkey, nullptr);
+  // compare the key params
+  ret = EVP_PKEY_cmp_parameters(pkey_sw, pkey_engine);
+  EXPECT_TRUE(ret);
+}
 
-// //     if (alice_shared_secret_len != bob_shared_secret_len ||
-// //     memcmp(alice_shared_secret, bob_shared_secret,
-// // alice_shared_secret_len)
-// //     != 0 ) {
-// //         // error handling
-// //         FAIL();
-// //     }
+TEST(Test, LoadPublicKey) {
+  ASSERT_NE(engine, nullptr);
+  EVP_PKEY *pkey_sw = nullptr;
+  EC_KEY *eckey = nullptr;
+  int ret = 0;
+  std::string path_to_key = "/home/glaum/engine/keys/public_key.pem";
 
-// //     // Clean up memory
-// //     EC_KEY_free(alice_pkey);
-// //     EC_KEY_free(bob_pkey);
+  // Load private key with sw
+  FILE *fp = fopen(path_to_key.c_str(), "r");
+  pkey_sw = EVP_PKEY_new();
+  eckey = EC_KEY_new_by_curve_name(NID_secp384r1);
+  PEM_read_EC_PUBKEY(fp, &eckey, nullptr, nullptr);
+  ret = EVP_PKEY_set1_EC_KEY(pkey_sw, eckey);
+  EC_KEY_free(eckey);
+  EXPECT_NE(EVP_PKEY_id(pkey_sw), EVP_PKEY_NONE);
 
-// // }
+  // Load private key with engine
+  EVP_PKEY *pkey_engine = nullptr;
+  pkey_engine =
+      ENGINE_load_public_key(engine, path_to_key.c_str(), nullptr, nullptr);
+  EXPECT_NE(pkey_engine, nullptr);
 
-// // TEST(Test, ECDHProcess)
-// // {
-// //     EC_KEY* alice_pkey;
-// //     EC_KEY* alice_pubkey;
-// //     EC_KEY* bob_pkey;
-// //     EC_KEY* bob_pubkey;
-// //     int ret;
-// //     FILE* fp;
-// //     std::string path_to_alice_key =
-// // "/home/glaum/engine/keys/alice_pkey.pem";
-// //     std::string path_to_bob_key = "/home/glaum/engine/keys/bob_pkey.pem";
-// //     std::string path_to_alice_pubkey =
-// //     "/home/glaum/engine/keys/alice_pubkey.pem"; std::string
-// //     path_to_bob_pubkey = "/home/glaum/engine/keys/bob_pubkey.pem"; size_t
-// //     shared_secret_len = 32;
+  // compare the keys
+  ret = EVP_PKEY_cmp(pkey_sw, pkey_engine);
+  EXPECT_TRUE(ret);
 
-// //     // Load alice private key with sw
-// //     fp = fopen(path_to_alice_key.c_str(), "r");
-// //     alice_pkey = EC_KEY_new_by_curve_name(NID_secp384r1);
-// //     PEM_read_ECPrivateKey(fp, &alice_pkey, nullptr, nullptr);
+  // compare the key params
+  ret = EVP_PKEY_cmp_parameters(pkey_sw, pkey_engine);
+  EXPECT_TRUE(ret);
+}
 
-// //     // Load bob private key with sw
-// //     fp = fopen(path_to_bob_key.c_str(), "r");
-// //     bob_pkey = EC_KEY_new_by_curve_name(NID_secp384r1);
-// //     PEM_read_ECPrivateKey(fp, &bob_pkey, nullptr, nullptr);
+TEST(Test, LoadCertificate) {
+  ASSERT_NE(engine, nullptr);
+  // path to cert
+  std::string cert_path = "/home/glaum/engine/keys/certificate.pem";
 
-// //     // Load alice public key with sw
-// //     fp = fopen(path_to_alice_pubkey.c_str(), "r");
-// //     alice_pubkey = EC_KEY_new_by_curve_name(NID_secp384r1);
-// //     PEM_read_EC_PUBKEY(fp, &alice_pubkey, nullptr, nullptr);
+  // load cert with sw
+  BIO *cert_bio = BIO_new_file(cert_path.c_str(), "r");
+  if (!cert_bio)
+    FAIL();
 
-// //     // Load bob public key with sw
-// //     fp = fopen(path_to_bob_pubkey.c_str(), "r");
-// //     bob_pubkey = EC_KEY_new_by_curve_name(NID_secp384r1);
-// //     PEM_read_EC_PUBKEY(fp, &bob_pubkey, nullptr, nullptr);
+  // Read the certificate from the BIO
+  X509 *cert_sw = PEM_read_bio_X509(cert_bio, NULL, NULL, NULL);
+  if (!cert_sw)
+    FAIL();
 
-// //     // check keys
-// //     EXPECT_EQ(1, EC_KEY_check_key(alice_pkey));
-// //     EXPECT_EQ(1, EC_KEY_check_key(alice_pubkey));
-// //     EXPECT_EQ(1, EC_KEY_check_key(bob_pkey));
-// //     EXPECT_EQ(1, EC_KEY_check_key(bob_pubkey));
+  // Free the BIO
+  BIO_free(cert_bio);
 
-// //     // pass key to EVP_PKEY
-// //     EVP_PKEY* alice_pevp = EVP_PKEY_new();
-// //     ret = EVP_PKEY_set1_EC_KEY(alice_pevp, alice_pkey);
-// //     EXPECT_EQ(ret, 1);
+  // curl does this:
+  struct params {
+    const char *cert_id;
+    X509 *cert;
+  };
 
-// //     EVP_PKEY* bob_pevp = EVP_PKEY_new();
-// //     ret = EVP_PKEY_set1_EC_KEY(bob_pevp, bob_pkey);
-// //     EXPECT_EQ(ret, 1);
+  // check if engine supports LOAD_CERT_CTRL
+  params p;
+  p.cert_id = "/home/glaum/engine/keys/certificate.pem";
+  printf("certstr: %p, addr: %p\n", p.cert_id, &p.cert_id);
 
-// //     EVP_PKEY* alice_pubevp = EVP_PKEY_new();
-// //     ret = EVP_PKEY_set1_EC_KEY(alice_pubevp, alice_pubkey);
-// //     EXPECT_EQ(ret, 1);
+  auto cmd_name = "LOAD_CERT_CTRL";
+  int engine_support = ENGINE_ctrl(engine, ENGINE_CTRL_GET_CMD_FROM_NAME, 0,
+                                   (void *)cmd_name, NULL);
+  EXPECT_EQ(1, engine_support);
 
-// //     EVP_PKEY* bob_pubevp = EVP_PKEY_new();
-// //     ret = EVP_PKEY_set1_EC_KEY(bob_pubevp, bob_pubkey);
-// //     EXPECT_EQ(ret, 1);
+  // load the certificate from the engine
+  int engine_load = ENGINE_ctrl_cmd(engine, cmd_name, 0, &p, NULL, 1);
+  EXPECT_EQ(1, engine_load);
 
-// //     // create ctx
-// //     EVP_PKEY_CTX *ctx1 = EVP_PKEY_CTX_new(alice_pevp, nullptr);
-
-// //     // derive init
-// //     ret = EVP_PKEY_derive_init(ctx1);
-// //     EXPECT_EQ(ret, 1);
-
-// //     // set peer
-// //     ret = EVP_PKEY_derive_set_peer(ctx1, bob_pubevp);
-// //     EXPECT_EQ(ret, 1);
-
-// //     // derive
-// //     unsigned char shared_secret2[shared_secret_len];
-// //     ret = EVP_PKEY_derive(ctx1, shared_secret2, &shared_secret_len);
-// //     EXPECT_EQ(ret, 1);
-
-// //     // cleanup
-// //     EVP_PKEY_CTX_free(ctx1);
-
-// //     // create ctx
-// //     EVP_PKEY_CTX *ctx2 = EVP_PKEY_CTX_new(bob_pevp, nullptr);
-
-// //     // derive init
-// //     ret = EVP_PKEY_derive_init(ctx2);
-// //     EXPECT_EQ(ret, 1);
-
-// //     // set peer
-// //     ret = EVP_PKEY_derive_set_peer(ctx2, alice_pubevp);
-// //     EXPECT_EQ(ret, 1);
-
-// //     // derive
-// //     unsigned char shared_secret1[shared_secret_len];
-// //     ret = EVP_PKEY_derive(ctx1, shared_secret1, &shared_secret_len);
-// //     EXPECT_EQ(ret, 1);
-
-// //     // cleanup
-// //     EVP_PKEY_CTX_free(ctx2);
-
-// //     // compare derived secrets
-// //     EXPECT_EQ(memcmp(shared_secret1, shared_secret2, shared_secret_len),
-// // 0);
-
-// //     // Test cleanup
-// //     EVP_PKEY_free(alice_pevp);
-// //     EVP_PKEY_free(alice_pubevp);
-// //     EVP_PKEY_free(bob_pevp);
-// //     EVP_PKEY_free(bob_pubevp);
-// //     EC_KEY_free(alice_pkey);
-// //     EC_KEY_free(alice_pubkey);
-// //     EC_KEY_free(bob_pkey);
-// //     EC_KEY_free(bob_pubkey);
-// // }
-
-// // TEST(Test, EngineSetDefault) {
-// //   EXPECT_EQ(ENGINE_set_default(engine, ENGINE_METHOD_ALL), 1);
-// // }
+  // check if equal, strangely 0 here means same as memcmp is used
+  int equal = X509_cmp(cert_sw, p.cert);
+  EXPECT_EQ(equal, 0);
+}
 
 
 TEST(Test, EngineFinish)

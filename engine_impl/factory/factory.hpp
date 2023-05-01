@@ -7,6 +7,8 @@
 #include <factory/factory_cipher.hpp>
 #include <factory/factory_digest.hpp>
 #include <factory/factory_ec.hpp>
+#include <factory/factory_pubkey.hpp>
+#include <factory/factory_pkey.hpp>
 
 
 namespace Factory {
@@ -75,6 +77,9 @@ public:
    * \return An instance of the EC algorithm or nullptr on failure.
    */
   virtual std::unique_ptr<FactoryEC> GetEC(int nid) noexcept = 0;
+
+  virtual std::unique_ptr<FactoryPrivKey> GetPrivateKeyLoader() noexcept = 0;
+  virtual std::unique_ptr<FactoryPubKey> GetPublicKeyLoader() noexcept = 0;
 };
 
 } // namespace Factory

@@ -2,6 +2,7 @@
 #include "digests/sw_digest_sha256.hpp"
 #include "digests/sw_digest_sha384.hpp"
 #include <memory>
+#include <cstring>
 
 namespace Factory {
 namespace SoftwareImpl {
@@ -16,13 +17,13 @@ int SwEc::Cleanup(EVP_PKEY_CTX *ctx) noexcept {
     EVP_PKEY_CTX_free(ctx_);
   }
 
-  if (key_) {
-    EC_KEY_free(key_);
-  }
+  // if (key_) {
+  //   EC_KEY_free(key_);
+  // }
 
-  if (peer_) {
-    EC_KEY_free(peer_);
-  }
+  // if (peer_) {
+  //   EC_KEY_free(peer_);
+  // }
 
   if (sig_) {
     ECDSA_SIG_free(sig_);
@@ -58,6 +59,12 @@ int SwEc::SignInit(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx) noexcept {
 int SwEc::Sign(EVP_PKEY_CTX *ctx, unsigned char *sig, size_t *siglen,
                EVP_MD_CTX *mctx) noexcept {
   int ok = 0;
+
+  // get ecdsa signature if sign
+  if (sign_) {
+    sig_ = ECDSA_do_sign(sDigestStruct.hash, sDigestStruct.size, key_);
+  }
+
   if (sig == nullptr) {
     int sig_len = i2d_ECDSA_SIG(sig_, nullptr);
     *siglen = static_cast<size_t>(sig_len);
@@ -79,7 +86,7 @@ int SwEc::VerifyInit(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx) noexcept {
 
   if (pkey) {
     // get ec key
-    key_ = EVP_PKEY_get0_EC_KEY(pkey);
+    peer_ = EVP_PKEY_get0_EC_KEY(pkey);
 
     // create ctx
     ctx_ = EVP_PKEY_CTX_new(pkey, nullptr);
@@ -98,12 +105,12 @@ int SwEc::Verify(EVP_PKEY_CTX *ctx, const unsigned char *sig, int siglen,
   if (sig != nullptr) {
     // cast to ECDSA_SIG
     ECDSA_SIG *sig_cast = d2i_ECDSA_SIG(nullptr, &sig, siglen);
-    ok = ECDSA_do_verify(hash_, hash_size_, sig_cast, key_);
+    ok = ECDSA_do_verify(sDigestStruct.hash, sDigestStruct.size, sig_cast, peer_);
   }
   return ok;
 }
 
-int SwEc::FindDigest(EVP_MD_CTX *ctx) noexcept
+int FindDigest(EVP_MD_CTX *ctx) noexcept
 {
  // find the digest type
   const EVP_MD *type = EVP_MD_CTX_md(ctx);
@@ -114,7 +121,7 @@ int SwEc::FindDigest(EVP_MD_CTX *ctx) noexcept
   return nid;
 }
 
-int SwEc::DoDigest(EVP_MD_CTX *ctx, FactoryDigest* digest, int nid, const void *data, size_t count) noexcept
+int DoDigest(EVP_MD_CTX *ctx, FactoryDigest* digest, int nid, const void *data, size_t count) noexcept
 {
   int ok = 0;
   // check if implementation has been found and run through digest process
@@ -127,27 +134,22 @@ int SwEc::DoDigest(EVP_MD_CTX *ctx, FactoryDigest* digest, int nid, const void *
   }
 
   if (ok) {
-    ok = digest->Final(ctx, hash_);
+    ok = digest->Final(ctx, sDigestStruct.hash);
   }
+
+  if (ok)
+  {
+    sDigestStruct.size = EVP_MD_size(EVP_get_digestbynid(nid));
+  } 
+
 
   // free context
   EVP_MD_CTX_free(ctx);
 
-  if (ok) {
-
-    // get digest size
-    hash_size_ = EVP_MD_size(EVP_get_digestbynid(nid));
-
-    // get ecdsa signature if sign
-    if (sign_) {
-      sig_ = ECDSA_do_sign(hash_, hash_size_, key_);
-    }
-  }
-
   return ok;
 }
 
-int SwEc::ECDSADigestUpdate(EVP_MD_CTX *ctx, const void *data, size_t count) noexcept {
+int ECDSADigestUpdate(EVP_MD_CTX *ctx, const void *data, size_t count) {
 
   int nid = FindDigest(ctx);
 
@@ -179,18 +181,7 @@ int SwEc::ECDSADigestUpdate(EVP_MD_CTX *ctx, const void *data, size_t count) noe
 int SwEc::CustomDigest(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx) noexcept {
   int ok = 0;
   if (ctx_) {
-
-    // overwrite the instance with a pointer to this
-    auto *md_data = EVP_MD_CTX_md_data(mctx);
-    md_data = this;
-
-    EVP_MD_CTX_set_update_fn(
-        mctx, [](EVP_MD_CTX *ctx, const void *data, size_t count) -> int {
-          // cast back to instance of this
-          auto *md_data = EVP_MD_CTX_md_data(ctx);
-          auto ec_instance = static_cast<SwEc *>(md_data);
-          return ec_instance->ECDSADigestUpdate(ctx, data, count);
-        });
+    EVP_MD_CTX_set_update_fn(mctx, ECDSADigestUpdate);
     ok = 1;
   }
   return ok;
@@ -227,6 +218,7 @@ int SwEc::Ctrl(EVP_PKEY_CTX *ctx, int type, int p1, void *p2) noexcept {
   case EVP_PKEY_CTRL_DIGESTINIT:
   case EVP_PKEY_EC:
   case EVP_PKEY_OP_DERIVE:
+    ok = 1;
     break;
   case EVP_PKEY_CTRL_PEER_KEY:
 
@@ -250,6 +242,7 @@ int SwEc::Ctrl(EVP_PKEY_CTX *ctx, int type, int p1, void *p2) noexcept {
       }
 
     } else if (p1 == 1) {
+      ok = 1;
       // not sure if required
       //   EVP_PKEY_CTX_set0_ecdh_kdf_ukm(ctx, nullptr, 32);
     }

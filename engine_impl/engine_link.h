@@ -64,9 +64,9 @@ int chacha20_cleanup(EVP_CIPHER_CTX *ctx);
 size_t chacha20_size();
 
 /* private key loader */
-EVP_PKEY *load_private_key(const char *keyfile);
+EVP_PKEY *load_private_key(struct engine_factory_instance* instance, const char *keyfile);
 /* public key loader */
-EVP_PKEY *load_public_key(const char *keyfile);
+EVP_PKEY *load_public_key(struct engine_factory_instance* instance, const char *keyfile);
 
 
 /* ec functions */

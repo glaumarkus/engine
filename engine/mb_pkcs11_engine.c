@@ -61,7 +61,7 @@ static EVP_PKEY *engine_load_private_key(ENGINE *engine, const char *key_id,
 #ifdef PRINT_DEBUG
   printf("[Engine]: engine_load_private_key called!\n");
 #endif
-  return load_private_key(key_id);
+  return load_private_key(impl_instance, key_id);
 }
 
 /* public key loader */
@@ -71,7 +71,7 @@ static EVP_PKEY *engine_load_public_key(ENGINE *engine, const char *key_id,
 #ifdef PRINT_DEBUG
   printf("[Engine]: engine_load_public_key called!\n");
 #endif
-  return load_public_key(key_id);
+  return load_public_key(impl_instance, key_id);
 }
 
 /* digest selector */
@@ -217,7 +217,7 @@ static inline int engine_ec_derive(EVP_PKEY_CTX *ctx, unsigned char *key,
 
 static inline int engine_ec_keygen_init(EVP_PKEY_CTX *ctx) {
 #ifdef PRINT_DEBUG
-  printf("[Engine]: engine_ec_cleanup called!\n");
+  printf("[Engine]: engine_ec_keygen_init called!\n");
 #endif
   return ec_keygen_init(ctx);
 }
@@ -225,14 +225,14 @@ static inline int engine_ec_keygen_init(EVP_PKEY_CTX *ctx) {
 static inline int engine_ec_keygen(EVP_PKEY_CTX *ctx, EVP_PKEY *pkey)
 {
 #ifdef PRINT_DEBUG
-  printf("[Engine]: engine_ec_cleanup called!\n");
+  printf("[Engine]: engine_ec_keygen called!\n");
 #endif
   return ec_keygen(ctx, pkey);
 }
 
 static inline int engine_ec_init(EVP_PKEY_CTX *ctx) {
 #ifdef PRINT_DEBUG
-  printf("[Engine]: engine_ec_cleanup called!\n");
+  printf("[Engine]: engine_ec_init called!\n");
 #endif
   return ec_init(impl_instance, ctx);
 }
@@ -284,7 +284,7 @@ static inline int engine_ec_signctx(EVP_PKEY_CTX *ctx, unsigned char *sig,
 static inline int engine_ec_verifyctx_init(EVP_PKEY_CTX *ctx,
                                            EVP_MD_CTX *mctx) {
 #ifdef PRINT_DEBUG
-  printf("[Engine]: engine_signctx called!\n");
+  printf("[Engine]: engine_ec_verifyctx_init called!\n");
 #endif
   return ec_verifyctx_init(ctx, mctx);
 }
@@ -293,7 +293,7 @@ static inline int engine_ec_verifyctx(EVP_PKEY_CTX *ctx,
                                       const unsigned char *sig, int siglen,
                                       EVP_MD_CTX *mctx) {
 #ifdef PRINT_DEBUG
-  printf("[Engine]: engine_signctx called!\n");
+  printf("[Engine]: engine_ec_verifyctx called!\n");
 #endif
   return ec_verifyctx(ctx, sig, siglen, mctx);
 }

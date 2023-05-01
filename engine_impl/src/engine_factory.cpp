@@ -1,6 +1,7 @@
 #include "engine_factory.hpp"
 #include <openssl/engine.h>
 #include <cstring>
+#include "asym/sw_cert.hpp"
 
 namespace Factory {
 namespace SoftwareImpl {
@@ -69,15 +70,21 @@ int EngineFactory::LoadCertFromString(void *cert_ptr) noexcept
 
     // determine if npkcs11 uri
 
-    // load certificate from filesystem
-    BIO *cert_bio = BIO_new_file(p->cert_id, "r");
-    if (cert_bio) {
-        p->cert = PEM_read_bio_X509(cert_bio, nullptr, nullptr, nullptr);
-        if (p->cert) {
-        ok = 1;
+    if (false)
+    {
+
+    }
+    else
+    {
+        SwCertificate cert;
+        ok = cert.Load(p->cert_id);
+
+        if( ok)
+        {
+            p->cert = cert.Get();
         }
     }
-    BIO_free(cert_bio);
+    
 
     return ok;
 }
@@ -130,6 +137,23 @@ std::unique_ptr<FactoryEC> EngineFactory::GetEC(int nid) noexcept
     auto *sw_ec = new SwEc(nid);
     ec = static_cast<std::unique_ptr<FactoryEC>>(sw_ec);
     return ec;
+}
+
+
+std::unique_ptr<FactoryPrivKey> EngineFactory::GetPrivateKeyLoader() noexcept 
+{
+    std::unique_ptr<FactoryPrivKey> pkey {nullptr};
+    auto *sw_pkey = new SwPrivKey();
+    pkey = static_cast<std::unique_ptr<FactoryPrivKey>>(sw_pkey);
+    return pkey;
+}
+
+std::unique_ptr<FactoryPubKey> EngineFactory::GetPublicKeyLoader() noexcept
+{
+    std::unique_ptr<FactoryPubKey> pubkey {nullptr};
+    auto *sw_pubkey = new SwPubKey();
+    pubkey = static_cast<std::unique_ptr<FactoryPubKey>>(sw_pubkey);
+    return pubkey;
 }
 
 

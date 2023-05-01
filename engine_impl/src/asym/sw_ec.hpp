@@ -34,12 +34,8 @@ public:
   int Keygen(EVP_PKEY_CTX *ctx, EVP_PKEY *pkey) noexcept override ;
   int Ctrl(EVP_PKEY_CTX *ctx, int type, int p1, void *p2) noexcept override ;
 
-  int ECDSADigestUpdate(EVP_MD_CTX *ctx, const void *data, size_t count) noexcept;
 
 private:
-
-  int FindDigest(EVP_MD_CTX *ctx) noexcept;
-  int DoDigest(EVP_MD_CTX *ctx, FactoryDigest* digest, int nid, const void *data, size_t count) noexcept;
 
   // hold private ctx for operation
   EVP_PKEY_CTX *ctx_{nullptr};
@@ -62,6 +58,18 @@ private:
   int nid_ {0};
 
 };
+
+struct CustomDigestStruct 
+{
+  EC_KEY* key;
+  unsigned char hash[EVP_MAX_MD_SIZE];
+  unsigned int size;
+};
+
+static CustomDigestStruct sDigestStruct;
+int ECDSADigestUpdate(EVP_MD_CTX *ctx, const void *data, size_t count);
+int FindDigest(EVP_MD_CTX *ctx) noexcept;
+int DoDigest(EVP_MD_CTX *ctx, FactoryDigest* digest, int nid, const void *data, size_t count) noexcept;
 
 
 } // namespace SoftwareImpl

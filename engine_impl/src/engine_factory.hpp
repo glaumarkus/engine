@@ -12,6 +12,8 @@
 #include "ciphers/sw_cipher_aes256gcm.hpp"
 #include "ciphers/sw_cipher_chacha20.hpp"
 #include "asym/sw_ec.hpp"
+#include "asym/sw_pkey.hpp"
+#include "asym/sw_pubkey.hpp"
 
 namespace Factory {
 namespace SoftwareImpl {
@@ -35,6 +37,9 @@ public:
     std::unique_ptr<FactoryCipher> GetCipher(int nid) noexcept override;
     std::unique_ptr<FactoryDigest> GetDigest(int nid) noexcept override;
     std::unique_ptr<FactoryEC> GetEC(int nid) noexcept override;
+    
+    std::unique_ptr<FactoryPrivKey> GetPrivateKeyLoader() noexcept override;
+    std::unique_ptr<FactoryPubKey> GetPublicKeyLoader() noexcept override;
 
 private:
 

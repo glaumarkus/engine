@@ -254,7 +254,7 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
-add_executable(engine_test test.cpp)
+add_executable(engine_test tests/engine_test.cpp)
 target_link_libraries(
     engine_test
     GTest::gtest_main

@@ -11,7 +11,7 @@
 static const char *mb_engine_id = "MB_PKCS11_ENGINE";
 static const char *mb_engine_name = "MB.OS custom PKCS11 Engine";
 
-static struct engine_factory_instance* impl_instance = NULL;
+static struct engine_factory_instance *impl_instance = NULL;
 
 RAND_METHOD engine_random_method = {
     engine_rand_set_seed, /* seed */
@@ -170,8 +170,6 @@ static int engine_pkey_selector(ENGINE *e, EVP_PKEY_METHOD **method,
   return ok;
 }
 
-
-
 /* pkey method */
 static EVP_PKEY_METHOD *engine_ec_method = NULL;
 static EVP_PKEY_METHOD *init_ec_method() {
@@ -196,7 +194,8 @@ static EVP_PKEY_METHOD *init_ec_method() {
     EVP_PKEY_meth_set_derive(engine_ec_method, engine_ec_derive_init,
                              engine_ec_derive);
     // support ECDHE
-    EVP_PKEY_meth_set_keygen(engine_ec_method, engine_ec_keygen_init, engine_ec_keygen);
+    EVP_PKEY_meth_set_keygen(engine_ec_method, engine_ec_keygen_init,
+                             engine_ec_keygen);
   }
   return engine_ec_method;
 };
@@ -222,8 +221,7 @@ static inline int engine_ec_keygen_init(EVP_PKEY_CTX *ctx) {
   return ec_keygen_init(ctx);
 }
 
-static inline int engine_ec_keygen(EVP_PKEY_CTX *ctx, EVP_PKEY *pkey)
-{
+static inline int engine_ec_keygen(EVP_PKEY_CTX *ctx, EVP_PKEY *pkey) {
 #ifdef PRINT_DEBUG
   printf("[Engine]: engine_ec_keygen called!\n");
 #endif

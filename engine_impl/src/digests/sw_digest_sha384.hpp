@@ -22,7 +22,7 @@ public:
   int Cleanup(EVP_MD_CTX *ctx) noexcept override;
 
 private:
-    EVP_MD_CTX* ctx_;
+  EVP_MD_CTX *ctx_;
 };
 
 } // namespace SoftwareImpl

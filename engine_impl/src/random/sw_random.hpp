@@ -5,11 +5,9 @@
 
 namespace Factory {
 namespace SoftwareImpl {
-    
 
 class SwRandom : public Factory::FactoryRandom {
 public:
-
   SwRandom() = default;
   SwRandom(SwRandom &) = delete;
   SwRandom(SwRandom &&) = delete;
@@ -21,11 +19,9 @@ public:
   int RandomBytes(unsigned char *buf, int num) noexcept override;
   int RandomStatus() noexcept override;
   int SetSeed() noexcept override;
-
 };
 
 } // namespace SoftwareImpl
 } // namespace Factory
-
 
 #endif // ENGINE_IMPL_SRC_RANDOM_SW_RANDOM_HPP

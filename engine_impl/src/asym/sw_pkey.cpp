@@ -1,14 +1,14 @@
 #include "sw_pkey.hpp"
 
-#include <openssl/pem.h>
 #include <openssl/ec.h>
 #include <openssl/evp.h>
+#include <openssl/pem.h>
 
 namespace Factory {
 namespace SoftwareImpl {
 
 // the key_id is expected to be an absolute path
-EVP_PKEY *SwPrivKey::Load(const char *key_id) noexcept  {
+EVP_PKEY *SwPrivKey::Load(const char *key_id) noexcept {
 
   FILE *fp = fopen(key_id, "r");
   if (!fp) {
@@ -54,8 +54,6 @@ EVP_PKEY *SwPrivKey::Load(const char *key_id) noexcept  {
 
   return pkey;
 }
-
-
 
 } // namespace SoftwareImpl
 } // namespace Factory

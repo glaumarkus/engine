@@ -12,10 +12,10 @@ Testing:
 #include <functional>
 #include <string>
 
-#include <openssl/rand.h>
 #include <openssl/ec.h>
 #include <openssl/evp.h>
 #include <openssl/pem.h>
+#include <openssl/rand.h>
 
 // Tests
 class Test_EC : public ::testing::Test {
@@ -44,8 +44,7 @@ TEST_F(Test_EC, TestECGen) {
 }
 
 // signing with Sha256
-TEST_F(Test_EC, TestECSignSha256)
-{
+TEST_F(Test_EC, TestECSignSha256) {
   int ok = 0;
   Factory::SoftwareImpl::SwEc ec(NID_secp384r1);
   EVP_PKEY *pkey = nullptr;
@@ -125,8 +124,7 @@ TEST_F(Test_EC, TestECSignSha256)
 }
 
 // signing with Sha256
-TEST_F(Test_EC, TestECSignSha384)
-{
+TEST_F(Test_EC, TestECSignSha384) {
   int ok = 0;
   Factory::SoftwareImpl::SwEc ec(NID_secp384r1);
   EVP_PKEY *pkey = nullptr;
@@ -205,16 +203,15 @@ TEST_F(Test_EC, TestECSignSha384)
   EVP_PKEY_free(pkey);
 }
 
-TEST_F(Test_EC, TestECDerive)
-{
+TEST_F(Test_EC, TestECDerive) {
   int ok = 0;
   Factory::SoftwareImpl::SwEc ec(NID_secp384r1);
 
   // keys
-  EVP_PKEY* pkey;
-  EC_KEY* eckey;
-  EVP_PKEY* pubkey;
-  EC_KEY* ecpkey;
+  EVP_PKEY *pkey;
+  EC_KEY *eckey;
+  EVP_PKEY *pubkey;
+  EC_KEY *ecpkey;
 
   // path to keys
   std::string path_to_alice_key = "/home/glaum/engine/keys/alice_pkey.pem";
@@ -253,16 +250,15 @@ TEST_F(Test_EC, TestECDerive)
   // derive
   std::vector<std::uint8_t> secret;
   std::size_t secret_size = 0;
-  EXPECT_TRUE(ec.Derive(ctx, nullptr, &secret_size ));
+  EXPECT_TRUE(ec.Derive(ctx, nullptr, &secret_size));
 
   EXPECT_EQ(secret_size, 48);
   secret.resize(secret_size);
-  EXPECT_TRUE(ec.Derive(ctx, secret.data(), &secret_size ));
+  EXPECT_TRUE(ec.Derive(ctx, secret.data(), &secret_size));
 
   // cleanup
   EXPECT_TRUE(ec.Cleanup(ctx));
   EVP_PKEY_CTX_free(ctx);
   EVP_PKEY_free(pkey);
   EVP_PKEY_free(pubkey);
-
 }

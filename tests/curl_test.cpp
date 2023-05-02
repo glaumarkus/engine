@@ -60,7 +60,7 @@ TEST(CurlTest, LoadDynamicEngine) {
     FAIL();
 
   // enable EC for curl
-  if (curl_easy_setopt(curl, CURLOPT_SSL_EC_CURVES, "brainpool384r1") !=
+  if (curl_easy_setopt(curl, CURLOPT_SSL_EC_CURVES, "secp384r1") !=
       CURLE_OK)
     FAIL();
 

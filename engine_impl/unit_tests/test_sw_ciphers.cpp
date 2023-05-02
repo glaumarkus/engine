@@ -1,8 +1,8 @@
 #include <factory/factory_cipher.hpp>
 
 #include "ciphers/sw_cipher_aes256cbc.hpp"
-#include "ciphers/sw_cipher_chacha20.hpp"
 #include "ciphers/sw_cipher_aes256gcm.hpp"
+#include "ciphers/sw_cipher_chacha20.hpp"
 
 #include <openssl/evp.h>
 
@@ -33,8 +33,8 @@ TEST_F(Test_Ciphers, TestAes256Cbc) {
   std::string plaintext(
       "This is a longer secret message that needs to be encrypted.");
   // the engine will supply already a padded string to the algorithm
-  std::string plaintext_padded(
-      "This is a longer secret message that needs to be encrypted.\x05\x05\x05\x05\x05");
+  std::string plaintext_padded("This is a longer secret message that needs to "
+                               "be encrypted.\x05\x05\x05\x05\x05");
   std::string key("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
   std::string iv("BBBBBBBBBBBBBBBB");
 
@@ -50,7 +50,8 @@ TEST_F(Test_Ciphers, TestAes256Cbc) {
                     (unsigned char *)iv.data(), 1);
   EXPECT_TRUE(ok);
   int cipher_len = 0;
-  ok = cipher->DoCipher(ctx, buff.data(), (unsigned char *)plaintext_padded.data(),
+  ok = cipher->DoCipher(ctx, buff.data(),
+                        (unsigned char *)plaintext_padded.data(),
                         plaintext_padded.size());
   EXPECT_TRUE(ok);
   ok = cipher->Cleanup(ctx);
@@ -79,7 +80,6 @@ TEST_F(Test_Ciphers, TestAes256Cbc) {
   EXPECT_EQ(buff.size(), buff2.size());
   EXPECT_EQ(buff, buff2);
 
-
   // buffer for decryption
   std::vector<std::uint8_t> buff_d;
   buff_d.resize(buff.size());
@@ -97,10 +97,10 @@ TEST_F(Test_Ciphers, TestAes256Cbc) {
   EVP_CIPHER_CTX_free(ctx);
 
   // compare again with plaintext
-  int cmp = memcmp(buff_d.data(), plaintext_padded.data(), plaintext_padded.size());
+  int cmp =
+      memcmp(buff_d.data(), plaintext_padded.data(), plaintext_padded.size());
   EXPECT_EQ(0, cmp);
 }
-
 
 TEST_F(Test_Ciphers, TestChaCha20) {
 
@@ -113,7 +113,8 @@ TEST_F(Test_Ciphers, TestChaCha20) {
   // check if cast worked
   EXPECT_NE(cipher, nullptr);
 
-  // message to be encrypted, chacha is a stream cipher and doesnt need padding as its blocksize is 1
+  // message to be encrypted, chacha is a stream cipher and doesnt need padding
+  // as its blocksize is 1
   std::string plaintext(
       "This is a longer secret message that needs to be encrypted.");
 
@@ -193,7 +194,8 @@ TEST_F(Test_Ciphers, TestAes256Gcm) {
   // check if cast worked
   EXPECT_NE(cipher, nullptr);
 
-  // message to be encrypted, chacha is a stream cipher and doesnt need padding as its blocksize is 1
+  // message to be encrypted, chacha is a stream cipher and doesnt need padding
+  // as its blocksize is 1
   std::string plaintext(
       "This is a longer secret message that needs to be encrypted.");
 
@@ -271,7 +273,7 @@ TEST_F(Test_Ciphers, TestAes256Gcm) {
   // set tag
   ok = cipher->Ctrl(ctx, EVP_CTRL_GCM_SET_TAG, 12, tag.data());
   EXPECT_TRUE(ok);
-  
+
   EXPECT_TRUE(ok);
   ok = cipher->Cleanup(ctx);
   EXPECT_TRUE(ok);

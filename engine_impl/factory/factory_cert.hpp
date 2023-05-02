@@ -11,7 +11,6 @@ namespace Factory {
  */
 class FactoryCertificate {
 public:
-
   /**
    * \brief Loads a certificate and private key from the specified sources.
    * \param cert_id Identification of the provided certificate. Can be an
@@ -25,8 +24,6 @@ public:
    * \return certificate on succes, nullptr on failure.
    */
   virtual X509 *Get() const noexcept = 0;
-
-
 };
 
 } // namespace Factory

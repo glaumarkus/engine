@@ -16,7 +16,6 @@ public:
   ~SwPubKey() = default;
 
   EVP_PKEY *Load(const char *key_id) noexcept override;
-
 };
 
 } // namespace SoftwareImpl

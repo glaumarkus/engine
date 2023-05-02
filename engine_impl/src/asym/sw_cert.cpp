@@ -6,7 +6,7 @@ namespace Factory {
 namespace SoftwareImpl {
 
 // the cert_id is expected to be an absolute path
-int SwCertificate::Load(const char *cert_id) noexcept  {
+int SwCertificate::Load(const char *cert_id) noexcept {
   int ok = 0;
   BIO *cert_bio = BIO_new_file(cert_id, "r");
   if (cert_bio) {
@@ -20,7 +20,7 @@ int SwCertificate::Load(const char *cert_id) noexcept  {
   return ok;
 }
 
-X509 *SwCertificate::Get() const noexcept  { return cert_; }
+X509 *SwCertificate::Get() const noexcept { return cert_; }
 
 } // namespace SoftwareImpl
 } // namespace Factory

@@ -1,8 +1,8 @@
 #include "sw_ec.hpp"
 #include "digests/sw_digest_sha256.hpp"
 #include "digests/sw_digest_sha384.hpp"
-#include <memory>
 #include <cstring>
+#include <memory>
 
 namespace Factory {
 namespace SoftwareImpl {
@@ -16,14 +16,6 @@ int SwEc::Cleanup(EVP_PKEY_CTX *ctx) noexcept {
   if (ctx_) {
     EVP_PKEY_CTX_free(ctx_);
   }
-
-  // if (key_) {
-  //   EC_KEY_free(key_);
-  // }
-
-  // if (peer_) {
-  //   EC_KEY_free(peer_);
-  // }
 
   if (sig_) {
     ECDSA_SIG_free(sig_);
@@ -105,14 +97,14 @@ int SwEc::Verify(EVP_PKEY_CTX *ctx, const unsigned char *sig, int siglen,
   if (sig != nullptr) {
     // cast to ECDSA_SIG
     ECDSA_SIG *sig_cast = d2i_ECDSA_SIG(nullptr, &sig, siglen);
-    ok = ECDSA_do_verify(sDigestStruct.hash, sDigestStruct.size, sig_cast, peer_);
+    ok = ECDSA_do_verify(sDigestStruct.hash, sDigestStruct.size, sig_cast,
+                         peer_);
   }
   return ok;
 }
 
-int FindDigest(EVP_MD_CTX *ctx) noexcept
-{
- // find the digest type
+int FindDigest(EVP_MD_CTX *ctx) noexcept {
+  // find the digest type
   const EVP_MD *type = EVP_MD_CTX_md(ctx);
 
   // get NID from type
@@ -121,8 +113,8 @@ int FindDigest(EVP_MD_CTX *ctx) noexcept
   return nid;
 }
 
-int DoDigest(EVP_MD_CTX *ctx, FactoryDigest* digest, int nid, const void *data, size_t count) noexcept
-{
+int DoDigest(EVP_MD_CTX *ctx, FactoryDigest *digest, int nid, const void *data,
+             size_t count) noexcept {
   int ok = 0;
   // check if implementation has been found and run through digest process
   if (digest != nullptr) {
@@ -137,11 +129,9 @@ int DoDigest(EVP_MD_CTX *ctx, FactoryDigest* digest, int nid, const void *data, 
     ok = digest->Final(ctx, sDigestStruct.hash);
   }
 
-  if (ok)
-  {
+  if (ok) {
     sDigestStruct.size = EVP_MD_size(EVP_get_digestbynid(nid));
-  } 
-
+  }
 
   // free context
   EVP_MD_CTX_free(ctx);
@@ -196,7 +186,7 @@ int SwEc::DeriveInit(EVP_PKEY_CTX *ctx) noexcept {
 
 int SwEc::Derive(EVP_PKEY_CTX *ctx, unsigned char *key,
                  size_t *keylen) noexcept {
-  
+
   return EVP_PKEY_derive(ctx_, key, keylen);
 }
 

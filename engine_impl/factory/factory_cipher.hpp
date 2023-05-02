@@ -69,8 +69,6 @@ public:
    */
   virtual int Ctrl(EVP_CIPHER_CTX *ctx, int type, int arg,
                    void *ptr) noexcept = 0;
-
-
 };
 
 } // namespace Factory

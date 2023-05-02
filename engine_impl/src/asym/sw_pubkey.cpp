@@ -1,15 +1,15 @@
 #include "sw_pubkey.hpp"
 
-#include <openssl/pem.h>
 #include <openssl/ec.h>
 #include <openssl/evp.h>
+#include <openssl/pem.h>
 
 namespace Factory {
 namespace SoftwareImpl {
 
 // the key_id is expected to be an absolute path
-EVP_PKEY *SwPubKey::Load(const char *key_id) noexcept  {
-FILE *fp = fopen(key_id, "r");
+EVP_PKEY *SwPubKey::Load(const char *key_id) noexcept {
+  FILE *fp = fopen(key_id, "r");
   if (!fp) {
     printf("Error opening private key file\n");
     return nullptr;
@@ -52,10 +52,7 @@ FILE *fp = fopen(key_id, "r");
   EC_KEY_free(ec_key);
 
   return pubkey;
-
 }
-
-
 
 } // namespace SoftwareImpl
 } // namespace Factory

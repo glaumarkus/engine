@@ -8,7 +8,7 @@ std::size_t SwChaCha20::ImplCtxSize() const noexcept {
 }
 
 int SwChaCha20::Init(EVP_CIPHER_CTX *ctx, const unsigned char *key,
-                      const unsigned char *iv, int enc) noexcept {
+                     const unsigned char *iv, int enc) noexcept {
   ctx_ = EVP_CIPHER_CTX_new();
   enc_ = enc;
   int ok = 0;
@@ -23,7 +23,7 @@ int SwChaCha20::Init(EVP_CIPHER_CTX *ctx, const unsigned char *key,
 }
 
 int SwChaCha20::DoCipher(EVP_CIPHER_CTX *ctx, unsigned char *out,
-                          const unsigned char *in, size_t inlen) noexcept {
+                         const unsigned char *in, size_t inlen) noexcept {
   int ok = 0;
   int len = 0;
   if (enc_ == 1) {
@@ -41,7 +41,7 @@ int SwChaCha20::Cleanup(EVP_CIPHER_CTX *ctx) noexcept {
 }
 
 int SwChaCha20::Ctrl(EVP_CIPHER_CTX *ctx, int type, int arg,
-                      void *ptr) noexcept {
+                     void *ptr) noexcept {
   return EVP_CIPHER_CTX_ctrl(ctx_, type, arg, ptr);
 }
 

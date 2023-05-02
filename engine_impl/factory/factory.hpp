@@ -2,14 +2,13 @@
 #define ENGINE_IMPL_FACTORY_FACTORY_HPP
 
 #include <cstdint>
-#include <openssl/evp.h>
-#include <memory>
 #include <factory/factory_cipher.hpp>
 #include <factory/factory_digest.hpp>
 #include <factory/factory_ec.hpp>
-#include <factory/factory_pubkey.hpp>
 #include <factory/factory_pkey.hpp>
-
+#include <factory/factory_pubkey.hpp>
+#include <memory>
+#include <openssl/evp.h>
 
 namespace Factory {
 
@@ -18,7 +17,6 @@ namespace Factory {
  */
 class EngineFactory {
 public:
-
   /**
    * Get size of a Factory instance to be stored at the host application
    *
@@ -51,7 +49,8 @@ public:
    * \param f A callback function.
    * \return The result of the command.
    */
-  virtual int CtrlCmd(ENGINE *e, int cmd, long i, void *p, void (*f)(void)) noexcept = 0;
+  virtual int CtrlCmd(ENGINE *e, int cmd, long i, void *p,
+                      void (*f)(void)) noexcept = 0;
 
   /**
    * Get the default cipher that is registered for the provided nid.
@@ -61,7 +60,6 @@ public:
    */
   virtual std::unique_ptr<FactoryCipher> GetCipher(int nid) noexcept = 0;
 
-  
   /**
    * Get the default digest that is registered for the provided nid.
    *
@@ -71,7 +69,8 @@ public:
   virtual std::unique_ptr<FactoryDigest> GetDigest(int nid) noexcept = 0;
 
   /**
-   * Get an instance of the specified curve that is registered for the provided nid.
+   * Get an instance of the specified curve that is registered for the provided
+   * nid.
    *
    * \param nid The identifer of the requested curve.
    * \return An instance of the EC algorithm or nullptr on failure.

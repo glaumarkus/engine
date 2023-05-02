@@ -26,7 +26,7 @@ public:
 private:
   EVP_CIPHER_CTX *ctx_;
   std::size_t len_;
-  unsigned char* in_;
+  unsigned char *in_;
   int enc_;
 };
 

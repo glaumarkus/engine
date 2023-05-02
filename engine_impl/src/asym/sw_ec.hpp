@@ -22,21 +22,20 @@ public:
   int Cleanup(EVP_PKEY_CTX *ctx) noexcept override;
   int SignInit(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx) noexcept override;
   int Sign(EVP_PKEY_CTX *ctx, unsigned char *sig, size_t *siglen,
-           EVP_MD_CTX *mctx) noexcept override ;
+           EVP_MD_CTX *mctx) noexcept override;
   int VerifyInit(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx) noexcept override;
-  
+
   int Verify(EVP_PKEY_CTX *ctx, const unsigned char *sig, int siglen,
              EVP_MD_CTX *mctx) noexcept override;
-  int CustomDigest(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx) noexcept override; 
-  int DeriveInit(EVP_PKEY_CTX *ctx) noexcept override ;
-  int Derive(EVP_PKEY_CTX *ctx, unsigned char *key, size_t *keylen) noexcept override ;
-  int KeygenInit(EVP_PKEY_CTX *ctx) noexcept override ;
-  int Keygen(EVP_PKEY_CTX *ctx, EVP_PKEY *pkey) noexcept override ;
-  int Ctrl(EVP_PKEY_CTX *ctx, int type, int p1, void *p2) noexcept override ;
-
+  int CustomDigest(EVP_PKEY_CTX *ctx, EVP_MD_CTX *mctx) noexcept override;
+  int DeriveInit(EVP_PKEY_CTX *ctx) noexcept override;
+  int Derive(EVP_PKEY_CTX *ctx, unsigned char *key,
+             size_t *keylen) noexcept override;
+  int KeygenInit(EVP_PKEY_CTX *ctx) noexcept override;
+  int Keygen(EVP_PKEY_CTX *ctx, EVP_PKEY *pkey) noexcept override;
+  int Ctrl(EVP_PKEY_CTX *ctx, int type, int p1, void *p2) noexcept override;
 
 private:
-
   // hold private ctx for operation
   EVP_PKEY_CTX *ctx_{nullptr};
 
@@ -55,13 +54,11 @@ private:
   unsigned int hash_size_{0};
 
   // used to store nid of EC
-  int nid_ {0};
-
+  int nid_{0};
 };
 
-struct CustomDigestStruct 
-{
-  EC_KEY* key;
+struct CustomDigestStruct {
+  EC_KEY *key;
   unsigned char hash[EVP_MAX_MD_SIZE];
   unsigned int size;
 };
@@ -69,8 +66,8 @@ struct CustomDigestStruct
 static CustomDigestStruct sDigestStruct;
 int ECDSADigestUpdate(EVP_MD_CTX *ctx, const void *data, size_t count);
 int FindDigest(EVP_MD_CTX *ctx) noexcept;
-int DoDigest(EVP_MD_CTX *ctx, FactoryDigest* digest, int nid, const void *data, size_t count) noexcept;
-
+int DoDigest(EVP_MD_CTX *ctx, FactoryDigest *digest, int nid, const void *data,
+             size_t count) noexcept;
 
 } // namespace SoftwareImpl
 } // namespace Factory

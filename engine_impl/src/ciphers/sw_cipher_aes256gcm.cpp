@@ -30,31 +30,26 @@ int SwAes256Gcm::DoCipher(EVP_CIPHER_CTX *ctx, unsigned char *out,
   if (enc_ == 1) {
     ok = EVP_EncryptUpdate(ctx_, out, &len, in, inlen);
     // set size of buffer after operation
-    if (ok)
-    {
-        ok = len;
+    if (ok) {
+      ok = len;
     }
 
     // out is nullptr when using aad
-    if (out)
-    {
-        if (!in_)
-        {
-            in_ = out;
-            len_ = len;
-        }
-        else
-        {
-            len_ += len;
-        }
+    if (out) {
+      if (!in_) {
+        in_ = out;
+        len_ = len;
+      } else {
+        len_ += len;
+      }
     }
-    
+
   } else if (enc_ == 0) {
     ok = EVP_DecryptUpdate(ctx_, out, &len, in, inlen);
     if (ok) {
       ok = len;
     }
-    
+
     // out is nullptr
     if (out) {
       if (!in_) {
@@ -77,30 +72,27 @@ int SwAes256Gcm::Cleanup(EVP_CIPHER_CTX *ctx) noexcept {
 
 int SwAes256Gcm::Ctrl(EVP_CIPHER_CTX *ctx, int type, int arg,
                       void *ptr) noexcept {
-    int ok = 0;
-    int len = 0;
-    switch (type)
-    {
-        case EVP_CTRL_GCM_SET_TAG:
-            ok = EVP_CIPHER_CTX_ctrl(ctx_, EVP_CTRL_GCM_SET_TAG, arg, ptr);
-            if (ok)
-            {
-              ok = EVP_DecryptFinal_ex(ctx_, in_ + len_, &len);
-            }
-            break;
-        case EVP_CTRL_GCM_GET_TAG:
-            ok = EVP_EncryptFinal_ex(ctx_, in_ + len_, &len);
-            if (ok)
-            {
-              ok = EVP_CIPHER_CTX_ctrl(ctx_, EVP_CTRL_GCM_GET_TAG, arg, ptr);
-            }
-            break;
-        case EVP_CTRL_GCM_SET_IVLEN:
-            ok = EVP_CIPHER_CTX_ctrl(ctx_, EVP_CTRL_GCM_SET_IVLEN, arg, nullptr);
-            break;
-        default:
-            break;
+  int ok = 0;
+  int len = 0;
+  switch (type) {
+  case EVP_CTRL_GCM_SET_TAG:
+    ok = EVP_CIPHER_CTX_ctrl(ctx_, EVP_CTRL_GCM_SET_TAG, arg, ptr);
+    if (ok) {
+      ok = EVP_DecryptFinal_ex(ctx_, in_ + len_, &len);
     }
+    break;
+  case EVP_CTRL_GCM_GET_TAG:
+    ok = EVP_EncryptFinal_ex(ctx_, in_ + len_, &len);
+    if (ok) {
+      ok = EVP_CIPHER_CTX_ctrl(ctx_, EVP_CTRL_GCM_GET_TAG, arg, ptr);
+    }
+    break;
+  case EVP_CTRL_GCM_SET_IVLEN:
+    ok = EVP_CIPHER_CTX_ctrl(ctx_, EVP_CTRL_GCM_SET_IVLEN, arg, nullptr);
+    break;
+  default:
+    break;
+  }
   return ok;
 }
 

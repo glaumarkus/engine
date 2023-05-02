@@ -18,8 +18,6 @@ TEST(Test, EngineInit) {
   EXPECT_TRUE(ENGINE_init(engine));
 }
 
-
-
 TEST(Test, Sha256) {
   ASSERT_NE(engine, nullptr);
 
@@ -208,7 +206,6 @@ TEST(Test, ECDSA) {
   // Check if type matches
   type = EVP_PKEY_base_id(pubkey_sw);
   EXPECT_EQ(type, EVP_PKEY_EC);
-
 
   // Sign with sw
   EVP_MD_CTX *mdctx = NULL;
@@ -828,9 +825,7 @@ TEST(Test, LoadCertificate) {
   EXPECT_EQ(equal, 0);
 }
 
-
-TEST(Test, EngineFinish)
-{
+TEST(Test, EngineFinish) {
   ASSERT_NE(engine, nullptr);
   EXPECT_TRUE(ENGINE_finish(engine));
 }

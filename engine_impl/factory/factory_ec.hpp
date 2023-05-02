@@ -95,7 +95,8 @@ public:
    * \param keylen The length of the output buffer.
    * \return int Returns 1 on success and 0 on failure.
    */
-  virtual int Derive(EVP_PKEY_CTX *ctx, unsigned char *key, size_t *keylen) noexcept = 0;
+  virtual int Derive(EVP_PKEY_CTX *ctx, unsigned char *key,
+                     size_t *keylen) noexcept = 0;
 
   /**
    * \brief Performs the key generation intialization.

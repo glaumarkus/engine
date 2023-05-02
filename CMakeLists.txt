@@ -170,23 +170,23 @@ factory_test PRIVATE
   ${ENGINE_IMPL_SRC}
   )
 
-# set(CURL_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/deps/curl-7.78.0/lib/.libs/libcurl.so")
-# set(CURL_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/deps/curl-7.78.0/include")
+set(CURL_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/deps/curl-7.78.0/lib/.libs/libcurl.so")
+set(CURL_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/deps/curl-7.78.0/include")
 
-# add_executable(curl_test curl_test.cpp)
-# target_link_libraries(
-#   curl_test
-#   GTest::gtest_main
-#   ${CURL_LIBRARY}
-#   ${OPENSSL_CRYPTO_LIBRARY} 
-#   ${OPENSSL_SSL_LIBRARY}
-#   ${ENGINE_NAME}  
-# )
-# target_include_directories(
-#   curl_test PRIVATE
-#   ${CURL_INCLUDE} 
-#   ${OPENSSL_INCLUDE_DIR}
-# )
+add_executable(curl_test tests/curl_test.cpp)
+target_link_libraries(
+  curl_test
+  GTest::gtest_main
+  ${CURL_LIBRARY}
+  ${OPENSSL_CRYPTO_LIBRARY} 
+  ${OPENSSL_SSL_LIBRARY}
+  ${ENGINE_NAME}  
+)
+target_include_directories(
+  curl_test PRIVATE
+  ${CURL_INCLUDE} 
+  ${OPENSSL_INCLUDE_DIR}
+)
 
 
 # Create a shared library for engine implementation

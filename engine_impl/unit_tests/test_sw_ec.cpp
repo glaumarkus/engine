@@ -78,7 +78,8 @@ TEST_F(Test_EC, TestECSignSha256) {
   EXPECT_TRUE(ec.CustomDigest(ctx, mctx));
 
   // update digest
-  EXPECT_TRUE(ec.ECDSADigestUpdate(mctx, msg.data(), msg.size()));
+  EXPECT_TRUE(
+      Factory::SoftwareImpl::ECDSADigestUpdate(mctx, msg.data(), msg.size()));
 
   // allocate memory
   std::vector<std::uint8_t> signature;
@@ -107,7 +108,8 @@ TEST_F(Test_EC, TestECSignSha256) {
   EXPECT_TRUE(ec.CustomDigest(ctx, mctx));
 
   // update digest
-  EXPECT_TRUE(ec.ECDSADigestUpdate(mctx, msg.data(), msg.size()));
+  EXPECT_TRUE(
+      Factory::SoftwareImpl::ECDSADigestUpdate(mctx, msg.data(), msg.size()));
 
   // Sign call
   EXPECT_TRUE(ec.Verify(ctx, signature.data(), sig_size, mctx));
@@ -158,7 +160,8 @@ TEST_F(Test_EC, TestECSignSha384) {
   EXPECT_TRUE(ec.CustomDigest(ctx, mctx));
 
   // update digest
-  EXPECT_TRUE(ec.ECDSADigestUpdate(mctx, msg.data(), msg.size()));
+  EXPECT_TRUE(
+      Factory::SoftwareImpl::ECDSADigestUpdate(mctx, msg.data(), msg.size()));
 
   // allocate memory
   std::vector<std::uint8_t> signature;
@@ -187,7 +190,8 @@ TEST_F(Test_EC, TestECSignSha384) {
   EXPECT_TRUE(ec.CustomDigest(ctx, mctx));
 
   // update digest
-  EXPECT_TRUE(ec.ECDSADigestUpdate(mctx, msg.data(), msg.size()));
+  EXPECT_TRUE(
+      Factory::SoftwareImpl::ECDSADigestUpdate(mctx, msg.data(), msg.size()));
 
   // Sign call
   EXPECT_TRUE(ec.Verify(ctx, signature.data(), sig_size, mctx));

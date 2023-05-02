@@ -6,7 +6,7 @@
 #include "engine_link.h"
 
 // defines
-// #define PRINT_DEBUG
+#define PRINT_DEBUG
 
 static const char *mb_engine_id = "MB_PKCS11_ENGINE";
 static const char *mb_engine_name = "MB.OS custom PKCS11 Engine";

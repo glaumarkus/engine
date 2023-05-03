@@ -91,3 +91,40 @@ Apart from that and extensive test suite is included in the engine_impl as well 
 - Sha256,Sha384
 - AES_256_CBC,AES_256_GCM,ChaCha20
 - Load PrivateKey, PublicKey, Certificate
+
+## Usage with libcurl
+
+To use the lib with curl for either MIC communication or dummy, the engine needs to be loaded in curl. Example is shown below. Currently using the ciphers in the engine is not possible without the hardware implementation (therefore commented out). Will get addressed in a future commit. Loading keys and certs however works just fine.
+
+```c++
+CURL *curl = curl_easy_init();
+
+std::string host("https://localhost:4433");
+std::string cainfo("/home/glaum/engine/keys/tls/client.pem");
+std::string cert("/home/glaum/engine/keys/tls/server.pem");
+std::string key("/home/glaum/engine/keys/tls/server.key");
+std::string engine_name("libmbengine");
+
+curl_easy_setopt(curl, CURLOPT_URL, host.c_str());
+curl_easy_setopt(curl, CURLOPT_CAINFO, cainfo.c_str());
+
+// load engine
+if (curl_easy_setopt(curl, CURLOPT_SSLENGINE, engine_name.c_str()) !=
+    CURLE_OK)
+    FAIL();
+
+// set as default for crypto // incompatible right now
+// if (curl_easy_setopt(curl, CURLOPT_SSLENGINE_DEFAULT, 1L) != CURLE_OK)
+//    FAIL();
+
+// load cert with engine
+curl_easy_setopt(curl, CURLOPT_SSLCERTTYPE, "ENG");
+curl_easy_setopt(curl, CURLOPT_SSLCERT, cert.c_str());
+
+// load pkey with engine
+curl_easy_setopt(curl, CURLOPT_SSLKEYTYPE, "ENG");
+curl_easy_setopt(curl, CURLOPT_SSLKEY, key.c_str());
+
+// perform call
+CURLcode res = curl_easy_perform(curl);
+```

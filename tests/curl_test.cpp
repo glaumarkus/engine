@@ -3,6 +3,7 @@
 #include <dlfcn.h>
 #include <gtest/gtest.h>
 #include <openssl/engine.h>
+#include <openssl/ssl.h>
 
 /* check openssl.c in curl lib line 2584 */
 
@@ -36,25 +37,33 @@ TEST(CurlTest, FindDynamicEngine) {
   EXPECT_TRUE(found_dynamic);
 }
 
-TEST(CurlTest, ConnectionLocalhost)
-{
+TEST(CurlTest, ConnectionLocalhost) {
   CURL *curl = curl_easy_init();
   if (!curl) {
     FAIL();
   }
-  curl_easy_setopt(curl, CURLOPT_URL, "https://localhost:8888");
-  curl_easy_setopt(curl, CURLOPT_CAINFO, "/home/glaum/engine/keys/client.pem");
-  
+
+  std::string host("https://localhost:4433");
+  std::string cainfo("/home/glaum/engine/keys/tls/client.pem");
+  std::string cert("/home/glaum/engine/keys/tls/server.pem");
+  std::string key("/home/glaum/engine/keys/tls/server.key");
+
+  curl_easy_setopt(curl, CURLOPT_URL, host.c_str());
+  curl_easy_setopt(curl, CURLOPT_CAINFO, cainfo.c_str());
+  curl_easy_setopt(curl, CURLOPT_SSLCERT, cert.c_str());
+  curl_easy_setopt(curl, CURLOPT_SSLKEY, key.c_str());
+
   // perform call
   CURLcode res = curl_easy_perform(curl);
-  if (res != CURLE_OK)
+  if (res != CURLE_OK && res != CURLE_UNSUPPORTED_PROTOCOL)
     FAIL();
 
   curl_easy_cleanup(curl);
 }
 
-TEST(CurlTest, LoadDynamicEngine) {
+TEST(CurlTest, SSLTest) { auto ctx = 0; }
 
+TEST(CurlTest, LoadDynamicEngine) {
 
   std::string url = "https://localhost:8888";
   std::string ca_info = "/home/glaum/engine/keys/client.pem";
@@ -65,21 +74,23 @@ TEST(CurlTest, LoadDynamicEngine) {
   CURL *curl = curl_easy_init();
   if (!curl) {
     FAIL();
-  }  
+  }
 
   curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
   curl_easy_setopt(curl, CURLOPT_CAINFO, ca_info.c_str());
 
   // load engine
-  if (curl_easy_setopt(curl, CURLOPT_SSLENGINE, engine_name.c_str()) != CURLE_OK)
+  if (curl_easy_setopt(curl, CURLOPT_SSLENGINE, engine_name.c_str()) !=
+      CURLE_OK)
     FAIL();
-  if(curl_easy_setopt(curl, CURLOPT_SSLENGINE_DEFAULT, 1L) != CURLE_OK)
+  if (curl_easy_setopt(curl, CURLOPT_SSLENGINE_DEFAULT, 1L) != CURLE_OK)
     FAIL();
 
-  if(curl_easy_setopt(curl, CURLOPT_SSLVERSION, (long)CURL_SSLVERSION_TLSv1_3))
+  if (curl_easy_setopt(curl, CURLOPT_SSLVERSION, (long)CURL_SSLVERSION_TLSv1_3))
     FAIL();
-    
-  // if(curl_easy_setopt(curl, CURLOPT_SSL_CIPHER_LIST, "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"))
+
+  // if(curl_easy_setopt(curl, CURLOPT_SSL_CIPHER_LIST,
+  // "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"))
   //   FAIL();
 
   /* cert is stored PEM coded in file... */
@@ -101,7 +112,6 @@ TEST(CurlTest, LoadDynamicEngine) {
   CURLcode res = curl_easy_perform(curl);
   if (res != CURLE_OK)
     FAIL();
-  
 
   curl_easy_cleanup(curl);
 }

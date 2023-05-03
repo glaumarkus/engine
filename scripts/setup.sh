@@ -18,3 +18,7 @@ rm -rf unzip curl-7.78.0.zip
 cd curl-7.78.0/
 CPPFLAGS="-I/home/glaum/engine/deps/openssl-1.1.1g/include" LDFLAGS="-L/home/glaum/engine/deps/openssl-1.1.1g" ./configure --enable-debug --with-openssl -enable-libcurl-option HAVE_OPENSSL_ENGINE_H 
 make
+
+# build softhsm
+cd ..
+wget 

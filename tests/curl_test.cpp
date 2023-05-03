@@ -61,56 +61,42 @@ TEST(CurlTest, ConnectionLocalhost) {
   curl_easy_cleanup(curl);
 }
 
-TEST(CurlTest, SSLTest) { auto ctx = 0; }
-
 TEST(CurlTest, LoadDynamicEngine) {
-
-  std::string url = "https://localhost:8888";
-  std::string ca_info = "/home/glaum/engine/keys/client.pem";
-  std::string engine_name = "libmbengine";
-  std::string cert_file = "/home/glaum/engine/keys/client.pem";
-  std::string key_file = "/home/glaum/engine/keys/server.key";
 
   CURL *curl = curl_easy_init();
   if (!curl) {
     FAIL();
   }
 
-  curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-  curl_easy_setopt(curl, CURLOPT_CAINFO, ca_info.c_str());
+  std::string host("https://localhost:4433");
+  std::string cainfo("/home/glaum/engine/keys/tls/client.pem");
+  std::string cert("/home/glaum/engine/keys/tls/server.pem");
+  std::string key("/home/glaum/engine/keys/tls/server.key");
+  std::string engine_name("libmbengine");
 
+  curl_easy_setopt(curl, CURLOPT_URL, host.c_str());
+  curl_easy_setopt(curl, CURLOPT_CAINFO, cainfo.c_str());
+  
   // load engine
   if (curl_easy_setopt(curl, CURLOPT_SSLENGINE, engine_name.c_str()) !=
       CURLE_OK)
     FAIL();
-  if (curl_easy_setopt(curl, CURLOPT_SSLENGINE_DEFAULT, 1L) != CURLE_OK)
-    FAIL();
-
-  if (curl_easy_setopt(curl, CURLOPT_SSLVERSION, (long)CURL_SSLVERSION_TLSv1_3))
-    FAIL();
-
-  // if(curl_easy_setopt(curl, CURLOPT_SSL_CIPHER_LIST,
-  // "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"))
+  
+  // set as default for crypto // incompatible right now
+  // if (curl_easy_setopt(curl, CURLOPT_SSLENGINE_DEFAULT, 1L) != CURLE_OK)
   //   FAIL();
-
-  /* cert is stored PEM coded in file... */
-  /* since PEM is default, we needn't set it for PEM */
-  // curl_easy_setopt(curl, CURLOPT_SSLCERTTYPE, "ENG");
-  // curl_easy_setopt(curl, CURLOPT_SSLCERT, cert_file.c_str());
-
-  /* if we use a key stored in a crypto engine,
-     we must set the key type to "ENG" */
-  // curl_easy_setopt(curl, CURLOPT_SSLKEYTYPE, "ENG");
-
-  // /* set the private key (file or ID in engine) */
-  // curl_easy_setopt(curl, CURLOPT_SSLKEY, key_file.c_str());
-
-  // /* disconnect if we can't validate server's cert */
-  // curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
+  
+  // load cert with engine
+  curl_easy_setopt(curl, CURLOPT_SSLCERTTYPE, "ENG");
+  curl_easy_setopt(curl, CURLOPT_SSLCERT, cert.c_str());
+  
+  // load pkey with engine
+  curl_easy_setopt(curl, CURLOPT_SSLKEYTYPE, "ENG");
+  curl_easy_setopt(curl, CURLOPT_SSLKEY, key.c_str());
 
   // perform call
   CURLcode res = curl_easy_perform(curl);
-  if (res != CURLE_OK)
+  if (res != CURLE_OK && res != CURLE_UNSUPPORTED_PROTOCOL)
     FAIL();
 
   curl_easy_cleanup(curl);

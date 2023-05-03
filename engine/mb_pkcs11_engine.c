@@ -19,7 +19,7 @@ RAND_METHOD engine_random_method = {
     engine_rand_cleanup,  /* cleanup */
     NULL,                 /* add */
     NULL,                 /* pseudorand */
-    NULL                  /* status */
+    engine_random_status,                  /* status */
 };
 
 static int engine_ctrl_cmd_string(ENGINE *e, int cmd, long i, void *p,

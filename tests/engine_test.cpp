@@ -18,6 +18,27 @@ TEST(Test, EngineInit) {
   EXPECT_TRUE(ENGINE_init(engine));
 }
 
+TEST(Test, Random)
+{
+  ASSERT_NE(engine, nullptr);
+
+  auto *random_method = ENGINE_get_RAND(engine);
+  if (random_method == nullptr)
+    FAIL();
+
+  auto random_status = random_method->status();
+  EXPECT_TRUE(random_status);
+
+  int num = 16;
+  std::vector<std::uint8_t> buf;
+  buf.resize(num);
+  std::vector<std::uint8_t> check = buf;
+
+  auto random_bytes = random_method->bytes(buf.data(), num);
+  EXPECT_NE(buf, check);
+  
+}
+
 TEST(Test, Sha256) {
   ASSERT_NE(engine, nullptr);
 

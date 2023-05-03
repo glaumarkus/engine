@@ -5,7 +5,12 @@
 #include <openssl/engine.h>
 #include <openssl/ssl.h>
 
-/* check openssl.c in curl lib line 2584 */
+
+/*
+need to run openssl s_server outside this program to debug:
+in keys/tls:
+openssl s_server -Verify 1 -cert server.pem -key server.key -tls1_3 localhost:4433 -HTTP -www
+*/
 
 using ::testing::Test;
 
@@ -83,8 +88,8 @@ TEST(CurlTest, LoadDynamicEngine) {
     FAIL();
   
   // set as default for crypto // incompatible right now
-  // if (curl_easy_setopt(curl, CURLOPT_SSLENGINE_DEFAULT, 1L) != CURLE_OK)
-  //   FAIL();
+  if (curl_easy_setopt(curl, CURLOPT_SSLENGINE_DEFAULT, 1L) != CURLE_OK)
+    FAIL();
   
   // load cert with engine
   curl_easy_setopt(curl, CURLOPT_SSLCERTTYPE, "ENG");

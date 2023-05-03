@@ -1,5 +1,5 @@
 #include "sw_digest_sha256.hpp"
-
+#include <openssl/sha.h>
 namespace Factory {
 namespace SoftwareImpl {
 

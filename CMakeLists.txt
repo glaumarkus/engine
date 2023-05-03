@@ -269,4 +269,4 @@ target_include_directories(
     ${OPENSSL_INCLUDE_DIR})
 
 gtest_discover_tests(engine_test)
-# gtest_discover_tests(curl_test)
+gtest_discover_tests(curl_test)

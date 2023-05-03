@@ -1,5 +1,7 @@
 #include "sw_cipher_aes256cbc.hpp"
-
+#include <openssl/conf.h>
+#include <openssl/evp.h>
+#include <openssl/err.h>
 namespace Factory {
 namespace SoftwareImpl {
 
